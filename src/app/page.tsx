@@ -1,65 +1,106 @@
-import Image from "next/image";
+import {
+  Users,
+  AlertTriangle,
+  Heart,
+  Activity,
+  TrendingUp,
+  Calendar,
+} from "lucide-react";
+import AppShell from "@/components/app-shell";
+import StatCard from "@/components/stat-card";
 
-export default function Home() {
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <AppShell title="Dashboard">
+      {/* Welcome section */}
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-foreground">
+          Good morning, Coach
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Here&apos;s your squad overview for today.
+        </p>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          title="Total Players"
+          value="24"
+          subtitle="3 unavailable"
+          icon={Users}
+          iconBg="bg-info-light"
+          iconColor="text-info"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <StatCard
+          title="Players at Risk"
+          value="5"
+          subtitle="High workload + low wellness"
+          icon={AlertTriangle}
+          iconBg="bg-danger-light"
+          iconColor="text-danger"
+          trend={{ value: "2 more than last week", positive: false }}
+        />
+        <StatCard
+          title="Avg. Wellness"
+          value="7.2"
+          subtitle="Out of 10"
+          icon={Heart}
+          iconBg="bg-accent-light"
+          iconColor="text-accent"
+          trend={{ value: "0.4 from yesterday", positive: true }}
+        />
+        <StatCard
+          title="Weekly Load"
+          value="1,840"
+          subtitle="AU (arbitrary units)"
+          icon={Activity}
+          iconBg="bg-warning-light"
+          iconColor="text-warning"
+          trend={{ value: "5% from last week", positive: true }}
+        />
+      </div>
+
+      {/* Placeholder sections */}
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Recent Wellness */}
+        <div className="rounded-xl border border-card-border bg-card-bg p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">
+              Recent Wellness Entries
+            </h3>
+            <TrendingUp className="h-4 w-4 text-muted" />
+          </div>
+          <div className="mt-6 flex flex-col items-center justify-center py-8 text-center">
+            <Heart className="h-10 w-10 text-card-border" />
+            <p className="mt-3 text-sm font-medium text-muted">
+              No wellness data yet
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              Entries will appear here once players submit daily check-ins.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Upcoming Sessions */}
+        <div className="rounded-xl border border-card-border bg-card-bg p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">
+              Upcoming Sessions
+            </h3>
+            <Calendar className="h-4 w-4 text-muted" />
+          </div>
+          <div className="mt-6 flex flex-col items-center justify-center py-8 text-center">
+            <Activity className="h-10 w-10 text-card-border" />
+            <p className="mt-3 text-sm font-medium text-muted">
+              No sessions scheduled
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              Training sessions and match data will show up here.
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
