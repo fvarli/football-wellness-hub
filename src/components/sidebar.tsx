@@ -10,18 +10,47 @@ import {
   AlertTriangle,
   BarChart3,
   Settings,
+  ClipboardCheck,
   X,
   Shield,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const navItems = [
-  { label: "Dashboard", href: "/", icon: LayoutDashboard },
-  { label: "Players", href: "/players", icon: Users },
-  { label: "Wellness", href: "/wellness", icon: Heart },
-  { label: "Workload", href: "/workload", icon: Activity },
-  { label: "Injury Risk", href: "/injury-risk", icon: AlertTriangle },
-  { label: "Reports", href: "/reports", icon: BarChart3 },
-  { label: "Settings", href: "/settings", icon: Settings },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    title: "Staff",
+    items: [
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Players", href: "/players", icon: Users },
+      { label: "Wellness", href: "/wellness", icon: Heart },
+      { label: "Workload", href: "/workload", icon: Activity },
+      { label: "Injury Risk", href: "/injury-risk", icon: AlertTriangle },
+      { label: "Reports", href: "/reports", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Player",
+    items: [
+      { label: "Check-in", href: "/check-in", icon: ClipboardCheck },
+    ],
+  },
+  {
+    title: "System",
+    items: [
+      { label: "Settings", href: "/settings", icon: Settings },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -52,7 +81,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       >
         {/* Logo area */}
         <div className="flex h-16 items-center justify-between px-5">
-          <Link href="/" className="flex items-center gap-2.5" onClick={onClose}>
+          <Link href="/dashboard" className="flex items-center gap-2.5" onClick={onClose}>
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
               <Shield className="h-4.5 w-4.5 text-white" />
             </div>
@@ -68,35 +97,41 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="mt-4 flex-1 space-y-0.5 px-3">
-          {navItems.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
-            const Icon = item.icon;
+        {/* Navigation sections */}
+        <nav className="mt-2 flex-1 overflow-y-auto px-3">
+          {navSections.map((section) => (
+            <div key={section.title} className="mb-4">
+              <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-sidebar-text/50">
+                {section.title}
+              </p>
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const isActive = pathname.startsWith(item.href);
+                  const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={`
-                  flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium
-                  transition-colors duration-150
-                  ${
-                    isActive
-                      ? "bg-white/10 text-sidebar-text-active"
-                      : "text-sidebar-text hover:bg-white/5 hover:text-sidebar-text-active"
-                  }
-                `}
-              >
-                <Icon className={`h-[18px] w-[18px] ${isActive ? "text-accent" : ""}`} />
-                {item.label}
-              </Link>
-            );
-          })}
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className={`
+                        flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium
+                        transition-colors duration-150
+                        ${
+                          isActive
+                            ? "bg-white/10 text-sidebar-text-active"
+                            : "text-sidebar-text hover:bg-white/5 hover:text-sidebar-text-active"
+                        }
+                      `}
+                    >
+                      <Icon className={`h-[18px] w-[18px] ${isActive ? "text-accent" : ""}`} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Footer */}
