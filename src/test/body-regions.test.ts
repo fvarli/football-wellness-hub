@@ -28,6 +28,7 @@ describe("body-regions canonical model", () => {
       "right_forearm",
       "left_calf",
       "right_calf",
+      "traps",
     ];
 
     it.each(sharedKeys)(
@@ -55,14 +56,15 @@ describe("body-regions canonical model", () => {
     });
 
     it("returns back for back-only regions", () => {
-      expect(getPrimaryView("traps")).toBe("back");
       expect(getPrimaryView("left_hamstring")).toBe("back");
       expect(getPrimaryView("lower_back")).toBe("back");
+      expect(getPrimaryView("left_glute")).toBe("back");
     });
 
     it("returns front for shared regions (front is listed first)", () => {
       expect(getPrimaryView("left_shoulder")).toBe("front");
       expect(getPrimaryView("left_calf")).toBe("front");
+      expect(getPrimaryView("traps")).toBe("front");
     });
   });
 
