@@ -58,13 +58,15 @@ function clickFirst(testId: string) {
   fireEvent.click(screen.getAllByTestId(testId)[0]);
 }
 
+type OnChange = (selections: BodyMapSelection[]) => void;
+
 describe("BodyMap selection behavior", () => {
   let selections: BodyMapSelection[];
-  let onChange: ReturnType<typeof vi.fn>;
+  let onChange: ReturnType<typeof vi.fn<OnChange>>;
 
   beforeEach(() => {
     selections = [];
-    onChange = vi.fn((next: BodyMapSelection[]) => {
+    onChange = vi.fn<OnChange>((next) => {
       selections = next;
     });
   });
@@ -167,7 +169,7 @@ describe("BodyMap severity behavior", () => {
     const initial: BodyMapSelection[] = [
       { regionKey: "chest", label: "Chest", view: "front", side: "center", severity: 3 },
     ];
-    const onChange = vi.fn();
+    const onChange = vi.fn<OnChange>();
 
     render(<BodyMap selections={initial} onChange={onChange} />);
 
@@ -185,7 +187,7 @@ describe("BodyMap severity behavior", () => {
   });
 
   it("severity picker creates a new selection from focused state", () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<OnChange>();
     render(<BodyMap selections={[]} onChange={onChange} />);
 
     // Focus an unselected region
@@ -213,7 +215,7 @@ describe("BodyMap sorting behavior", () => {
       { regionKey: "left_shoulder", label: "L. Shoulder", view: "front", side: "left", severity: 5 },
     ];
 
-    render(<BodyMap selections={sels} onChange={vi.fn()} />);
+    render(<BodyMap selections={sels} onChange={vi.fn<OnChange>()} />);
 
     const heading = screen.getByText(/Selected Areas/i);
     const listContainer = heading.parentElement as HTMLElement;
@@ -232,7 +234,7 @@ describe("BodyMap sorting behavior", () => {
 
 describe("BodyMap read-only mode", () => {
   it("does not call onChange when clicked in readOnly mode", () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<OnChange>();
     render(<BodyMap selections={[]} onChange={onChange} readOnly />);
 
     clickFirst("front-chest");
