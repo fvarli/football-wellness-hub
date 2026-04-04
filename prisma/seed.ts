@@ -1,0 +1,74 @@
+import { PrismaClient } from "../src/generated/prisma/client";
+import { players, wellnessEntries, trainingSessions } from "../src/lib/mock-data";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log("Seeding database...");
+
+  // Clear existing data (order matters due to FK constraints)
+  await prisma.wellnessBodyMapSelection.deleteMany();
+  await prisma.wellnessEntry.deleteMany();
+  await prisma.trainingSession.deleteMany();
+  await prisma.player.deleteMany();
+
+  // Players
+  for (const p of players) {
+    await prisma.player.create({
+      data: { id: p.id, name: p.name, position: p.position, number: p.number, age: p.age, status: p.status },
+    });
+  }
+  console.log(`  ${players.length} players`);
+
+  // Wellness entries + body map selections
+  for (const e of wellnessEntries) {
+    await prisma.wellnessEntry.create({
+      data: {
+        id: e.id,
+        playerId: e.playerId,
+        date: e.date,
+        fatigue: e.fatigue,
+        soreness: e.soreness,
+        sleepQuality: e.sleepQuality,
+        recovery: e.recovery,
+        stress: e.stress,
+        mood: e.mood,
+        overallScore: e.overallScore,
+        notes: e.notes ?? null,
+        bodyMapSelections: {
+          create: e.bodyMap.map((bm) => ({
+            regionKey: bm.regionKey,
+            label: bm.label,
+            view: bm.view,
+            side: bm.side,
+            severity: bm.severity,
+          })),
+        },
+      },
+    });
+  }
+  console.log(`  ${wellnessEntries.length} wellness entries`);
+
+  // Training sessions
+  for (const s of trainingSessions) {
+    await prisma.trainingSession.create({
+      data: {
+        id: s.id,
+        playerId: s.playerId,
+        date: s.date,
+        type: s.type,
+        durationMinutes: s.durationMinutes,
+        rpe: s.rpe,
+        sessionLoad: s.sessionLoad,
+        notes: s.notes ?? null,
+      },
+    });
+  }
+  console.log(`  ${trainingSessions.length} training sessions`);
+
+  console.log("Seed complete.");
+}
+
+main()
+  .catch((e) => { console.error(e); process.exit(1); })
+  .finally(() => prisma.$disconnect());

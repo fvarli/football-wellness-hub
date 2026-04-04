@@ -27,10 +27,12 @@ Replace spreadsheet-based wellness tracking with a purpose-built tool that:
 
 | Page | Route | Status |
 |---|---|---|
-| Dashboard | `/dashboard` | Mock stat cards (total players, at-risk, avg wellness, weekly load) |
-| Player list | `/players` | 8 demo players with search, status badges, latest wellness scores |
-| Player detail | `/players/[id]` | Profile header, latest check-in breakdown, body soreness summary, wellness history table |
+| Dashboard | `/dashboard` | Live stat cards (total players, at-risk, avg wellness, soreness flags) + squad risk table |
+| Player list | `/players` | 8 demo players with search, status badges, wellness scores, risk level badges |
+| Player detail | `/players/[id]` | Profile header, risk profile card (ACWR, trend, flags), latest check-in, body soreness, wellness history |
 | Wellness overview | `/wellness` | Squad-wide color-coded wellness table |
+| Workload | `/workload` | Training session list with summary cards (total sessions, avg load, highest load) + link to log form |
+| Log Session | `/workload/log` | Training session creation form: type, duration, RPE, notes. Submits to `POST /api/sessions`. |
 | Daily check-in | `/check-in` | 6-metric wellness form + anatomical body soreness map |
 | Settings | `/settings` | Placeholder |
 
@@ -38,7 +40,7 @@ Navigation groups: **Staff** (dashboard, players, wellness, workload, injury ris
 
 ## Current Maturity
 
-**Frontend prototype with mock data.** The UI is functional and polished. All data is client-side. There is no backend, no database, no authentication. The architecture is designed so that backend integration can replace mock data without restructuring components.
+**Full-stack prototype with PostgreSQL persistence.** The UI is functional and polished. Data is stored in PostgreSQL via Prisma 7. API routes handle wellness check-in and training session creation with full server-side validation. There is no authentication yet — a demo playerId is used for writes.
 
 ### Tech Stack
 
@@ -48,5 +50,6 @@ Navigation groups: **Staff** (dashboard, players, wellness, workload, injury ris
 | Language | TypeScript 5 |
 | UI | React 19, Tailwind CSS 4 |
 | Icons | Lucide React |
+| Database | PostgreSQL via Prisma 7, @prisma/adapter-pg |
 | Testing | Vitest 4, React Testing Library, jsdom |
 | Lint | ESLint 9 with next config |

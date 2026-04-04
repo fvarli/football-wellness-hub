@@ -1,7 +1,9 @@
 import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
-import { getAllLatestWellness } from "@/lib/mock-data";
+import { getAllLatestWellness } from "@/lib/data/service";
+
+export const dynamic = "force-dynamic";
 import { WELLNESS_METRICS } from "@/lib/types";
 
 const statusStyles: Record<string, string> = {
@@ -17,8 +19,8 @@ function cellColor(value: number): string {
   return "text-emerald-700 bg-emerald-100";
 }
 
-export default function WellnessOverviewPage() {
-  const data = getAllLatestWellness();
+export default async function WellnessOverviewPage() {
+  const data = await getAllLatestWellness();
 
   return (
     <AppShell title="Wellness Overview">

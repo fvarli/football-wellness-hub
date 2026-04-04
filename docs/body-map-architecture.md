@@ -32,11 +32,12 @@ Every bilateral muscle has separate left/right keys (`left_shoulder`, `right_sho
 
 ### View Is Metadata, Not Identity
 
-Six muscles have SVG paths in both front and back views:
+Seven muscles have SVG paths in both front and back views:
 
 - `left_shoulder` / `right_shoulder`
 - `left_forearm` / `right_forearm`
 - `left_calf` / `right_calf`
+- `traps`
 
 Clicking the shoulder from the front or back SVG focuses the same `left_shoulder` key. When a severity is chosen, the selection is stored under that single key. The `REGION_VIEWS` map in `body-regions.ts` tracks which views each key appears in. The `view` field in a stored `BodyMapSelection` records which view was used at selection time — it's informational, not a key component.
 
@@ -75,6 +76,8 @@ interface BodyMapSelection {
 ```
 
 Selections are self-describing so consumers don't need the region registry to render labels.
+
+Body map selections are **embedded** in `WellnessEntry.bodyMap` (not stored as a separate lookup). See `docs/domain-model.md` for the full entity relationship.
 
 ## Interaction Model
 

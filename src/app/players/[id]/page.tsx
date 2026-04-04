@@ -1,10 +1,13 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
 import BodyMapSummary from "@/components/body-map-summary";
-import { getPlayer, getPlayerWellness, getLatestWellness, getBodyMapForEntry } from "@/lib/mock-data";
+import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
+import { getPlayerById, getWellnessForPlayer, getLatestWellness, getRiskSnapshot } from "@/lib/data/service";
 import { WELLNESS_METRICS } from "@/lib/types";
 
 const statusStyles: Record<string, string> = {
@@ -26,17 +29,17 @@ export default async function PlayerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const player = getPlayer(id);
+  const player = await getPlayerById(id);
 
   if (!player) notFound();
 
-  const entries = getPlayerWellness(player.id);
-  const latest = getLatestWellness(player.id);
-  const latestBodyMap = latest ? getBodyMapForEntry(latest.id) : [];
+  const entries = await getWellnessForPlayer(player.id);
+  const latest = await getLatestWellness(player.id);
+  const latestBodyMap = latest?.bodyMap ?? [];
+  const snap = await getRiskSnapshot(player.id);
 
   return (
     <AppShell title={player.name}>
-      {/* Back link */}
       <Link
         href="/players"
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
@@ -74,6 +77,39 @@ export default async function PlayerDetailPage({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Risk summary card */}
+      <div className="mt-4 rounded-xl border border-card-border bg-card-bg p-5">
+        <h3 className="mb-3 text-sm font-semibold text-foreground">Risk Profile</h3>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div>
+            <p className="text-xs text-muted">Risk Level</p>
+            <div className="mt-1"><RiskLevelBadge level={snap.riskLevel} size="md" /></div>
+          </div>
+          <div>
+            <p className="text-xs text-muted">ACWR</p>
+            <div className="mt-1"><AcwrValue acwr={snap.acwr} /></div>
+          </div>
+          <div>
+            <p className="text-xs text-muted">Wellness Trend</p>
+            <div className="mt-1"><TrendBadge trend={snap.wellnessTrend} /></div>
+          </div>
+          <div>
+            <p className="text-xs text-muted">Soreness Flags</p>
+            <p className="mt-1 text-sm font-semibold text-foreground">{snap.sorenessFlags.length}</p>
+          </div>
+        </div>
+        {snap.sorenessFlags.length > 0 && (
+          <div className="mt-3 space-y-1">
+            {snap.sorenessFlags.map((f) => (
+              <div key={f.regionKey} className="flex items-center justify-between rounded-lg bg-orange-50 px-3 py-1.5">
+                <span className="text-xs font-medium text-orange-800">{f.label}</span>
+                <span className="text-[11px] text-orange-600">{f.reason}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Latest scores breakdown */}

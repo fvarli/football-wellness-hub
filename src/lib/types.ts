@@ -21,6 +21,7 @@ export interface WellnessEntry {
   mood: number; // 1-10, higher = better
   notes?: string;
   overallScore: number; // average of 6 metrics
+  bodyMap: BodyMapSelection[]; // per-muscle soreness (empty array if none)
 }
 
 export type WellnessMetric = keyof Pick<
@@ -57,4 +58,56 @@ export interface BodyMapSelection {
   view: BodyMapView;
   side: BodySide | null;
   severity: number; // 1-10: 1 = minimal discomfort, 10 = severe pain
+}
+
+// ── Training / Workload ────────────────────────────────────
+
+export type SessionType = "training" | "match" | "gym" | "recovery";
+
+/**
+ * A single training or match session for a player.
+ * sessionLoad is derived: rpe × durationMinutes.
+ */
+export interface TrainingSession {
+  id: string;
+  playerId: string;
+  date: string;             // ISO YYYY-MM-DD
+  type: SessionType;
+  durationMinutes: number;
+  rpe: number;              // 1-10 (Borg CR-10)
+  sessionLoad: number;      // DERIVED: rpe × durationMinutes (AU)
+  notes?: string;
+}
+
+// ── Risk / Derived Metrics ─────────────────────────────────
+
+export type TrendDirection = "improving" | "stable" | "declining";
+export type RiskLevel = "low" | "moderate" | "high" | "critical";
+
+/** A muscle flagged by the risk engine due to severity or recurrence. */
+export interface SorenessFlag {
+  regionKey: string;        // canonical muscle key
+  label: string;
+  reason: string;           // e.g. "severity 8+ in last 3 days"
+  latestSeverity: number;
+}
+
+/**
+ * Derived snapshot of a player's current risk profile.
+ * Recalculated from source data; not user-editable.
+ */
+export interface PlayerRiskSnapshot {
+  playerId: string;
+  calculatedAt: string;     // ISO timestamp
+  // Workload
+  acuteLoad: number;        // sum sessionLoad last 7 days
+  chronicLoad: number;      // avg weekly sessionLoad last 28 days
+  acwr: number | null;      // acuteLoad / chronicLoad (null if insufficient data)
+  // Wellness
+  latestWellnessScore: number | null;
+  wellnessTrend: TrendDirection;
+  // Soreness
+  sorenessFlags: SorenessFlag[];
+  // Overall
+  riskLevel: RiskLevel;
 }

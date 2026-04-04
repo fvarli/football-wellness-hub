@@ -32,43 +32,123 @@
 - Vitest test suite (28 tests: data model + component interaction)
 - Architecture and QA documentation
 
+### Milestone 5 — Domain Model Foundation
+- Unified domain model design documented in `docs/domain-model.md`
+- Body map selections embedded directly in `WellnessEntry.bodyMap` (removed separate `bodyMapEntries` side-table)
+- `TrainingSession` and `SessionType` types defined for workload tracking
+- `PlayerRiskSnapshot`, `SorenessFlag`, `RiskLevel`, `TrendDirection` types defined for injury risk
+- Source-of-truth vs derived field classification documented
+- Phased implementation plan from frontend mock to backend persistence
+
+### Milestone 6 — Workload Foundation
+- Mock training session data for 8 players across 3 days (22 sessions: match, training, gym, recovery)
+- `/workload` page with summary stat cards (total sessions, avg load, highest load)
+- Session table: player name, date, type badge, duration, RPE, session load (AU)
+- RPE color-coded (green/amber/red), load color-coded by intensity
+- `getAllSessions()` and `getPlayerSessions()` data helpers
+- Test suite for training session data integrity (8 cases)
+
+### Milestone 7 — Risk Computation Module
+- Pure computation layer in `src/lib/risk.ts` — no side effects, no global state
+- ACWR: 7-day acute load / 28-day chronic load (4-week average weekly)
+- Wellness trend: improving / stable / declining from recent vs prior entry scores
+- Soreness flags: severity >= 7 in last 3 days, or recurring in 3+ of last 5 entries
+- Composite risk level: critical / high / moderate / low from ACWR + trend + flags
+- Full snapshot builder: `calculatePlayerRiskSnapshot()` assembles all derived metrics
+- 30 unit tests covering all functions, edge cases, and boundary conditions
+
+### Milestone 8 — Risk Display in UI
+- Dashboard: live stat cards computed from risk snapshots (at-risk count, avg wellness, flagged players) + full squad risk table sorted by risk level
+- Player list: per-player risk level badge alongside status and wellness score
+- Player detail: risk profile card with ACWR value, risk level badge, wellness trend, soreness flag count + flag detail rows
+- Presentational components: `RiskLevelBadge`, `TrendBadge`, `AcwrValue` in `risk-badge.tsx`
+- 9 component tests for risk badge rendering
+- All dashboard stat cards now driven by real computed data instead of hardcoded values
+
+### Milestone 9 — Data Access Layer and Persistence Planning
+- Data service abstraction in `src/lib/data/service.ts` — all pages read through this single entry point
+- Pages no longer import `mock-data.ts` directly
+- Persistence planning docs: `persistence-plan.md`, `data-access-layer.md`, `database-schema.md`
+- Recommended stack: Next.js API routes + Prisma + PostgreSQL
+- Body map storage decision: normalized child rows for analytics (API shape stays embedded)
+- Database schema with indexes, audit fields, Prisma preview
+- Migration path from mock arrays → Prisma queries documented
+
+### Milestone 10 — Write Contracts, Validation, and API Routes
+- Input validation module (`src/lib/validation.ts`) with pure validator functions
+- Wellness check-in contract: 6 metrics validated 1-10, optional bodyMap validated against canonical region registry, duplicate regionKey rejection, overallScore derived server-side, labels resolved from registry
+- Training session contract: type/duration/rpe validated, sessionLoad derived server-side (rpe × duration)
+- Write methods in data service (`submitWellnessCheckIn`, `submitTrainingSession`) — validate then mutate in-memory arrays
+- API route skeletons: `POST /api/wellness/check-in`, `POST /api/sessions` — delegate to service, return 201/400
+- 22 new tests: 18 validation + 4 service write integration
+- All validation returns `{ ok, data }` or `{ ok: false, errors }` discriminated union
+
+### Milestone 11 — Check-in Form Wired to API
+- Wellness form submits via `fetch POST /api/wellness/check-in` instead of local-only state
+- Loading spinner on submit button during request
+- Validation errors from API displayed as an error summary above the form; entered values preserved
+- Success screen shows body area count from the API response
+- "Submit Another" resets form completely
+- Demo `playerId` hardcoded until auth exists
+- 5 new tests: successful submit, API error display, network error, success reset, loading state
+
+### Milestone 12 — Wellness Write Business Rules
+- One check-in per player per day enforced in service layer (duplicate rejected with clear error)
+- Error shape standardized to `WriteError { field?: string; message: string }` across all write paths
+- Field-level error attribution on all validation and business rule failures
+- Duplicate-date check runs after validation passes, before data mutation
+- 106 tests across 8 test files (4 new: duplicate rejection, cross-player same date, error shape stability)
+
+### Milestone 13 — Training Session Creation UI
+- `/workload/log` page with session creation form: date, type selector, duration, RPE rating, notes
+- Live session load preview (RPE x duration) shown before submit
+- Submits via `fetch POST /api/sessions` with loading, success, error, and reset states
+- "Log Session" link added to workload page header
+- `SessionForm` component matches wellness form UX patterns (error summary, loading spinner, success screen)
+- 6 new component tests + 1 new service integration test (session readable after creation)
+
+### Milestone 14 — PostgreSQL Persistence via Prisma
+- Prisma 7 schema with 4 tables: Player, WellnessEntry, WellnessBodyMapSelection, TrainingSession
+- Body map stored as normalized child rows; assembled into bodyMap array on read by the service
+- `src/lib/db.ts` Prisma client singleton with `@prisma/adapter-pg`
+- All service functions converted to async Prisma queries
+- All server component pages updated to async/await with `force-dynamic`
+- Players list restructured: server component (data fetch) + client component (search UI)
+- Seed script (`prisma/seed.ts`) populates database from existing mock data
+- `mock-data.ts` remains as seed input only, not as runtime storage
+- Risk snapshots still computed on-the-fly (not persisted)
+- 111 tests across 9 test files (service-writes tests refactored to test validation layer directly)
+
 ## Current Stable Baseline
 
-The application is a **complete frontend prototype** with:
+The application is a **full-stack prototype with PostgreSQL persistence**:
 - All major UI screens built and navigable
-- Wellness check-in form with structured body soreness input
+- Data persisted in PostgreSQL via Prisma 7
+- Wellness check-in and training session creation via validated API routes
+- Body map selections stored as normalized child rows, assembled on read
+- One check-in per player per day enforced at the service layer
+- Risk computation (ACWR, wellness trend, soreness flags) computed from persisted data
+- Risk data displayed on dashboard, player list, and player detail pages
+- Input validation with regionKey verification against canonical body-regions registry
 - Polished responsive design
-- Test coverage for product-critical body map behavior
-- Mock data for 8 players with realistic wellness entries
+- 111 tests across 9 test files
+- Database seeded from mock data for 8 players
 
 All code builds, lints, and tests cleanly.
 
 ## Next Likely Milestones
 
 ### Backend Persistence
-- API routes or external backend for wellness entries
-- Database for players, entries, body map selections
+- API routes or external backend for wellness entries and training sessions
+- Database for players, entries, body map selections, sessions
 - Replace mock data with real API calls
-- `BodyMapSelection` and `WellnessEntry` types are already designed for serialization
+- All TypeScript interfaces are already designed for serialization
 
 ### Authentication and RBAC
 - Login flow (likely OAuth or credential-based)
 - Role assignment: Admin, Coach, Player
 - Route protection via middleware or layout-level guards
 - Sidebar section visibility based on role
-- Route groups `(staff)/`, `(player)/` if needed
-
-### Workload Tracking (RPE + Session Data)
-- Training session logging
-- RPE (Rate of Perceived Exertion) per session
-- Session load = RPE x duration
-- Weekly/daily load aggregation
-
-### ACWR and Injury Risk
-- Acute:Chronic Workload Ratio calculation per player
-- Per-muscle-group risk scoring using body map `regionKey` as join key
-- Risk thresholds and alert rules
-- Dashboard integration for at-risk player identification
 
 ### Analytics and Trends
 - Wellness trend charts per player over time
@@ -76,21 +156,23 @@ All code builds, lints, and tests cleanly.
 - Squad-level trend visualization
 - Exportable reports
 
+### Advanced Risk Features
+- Per-muscle-group risk scoring (correlate ACWR with body map regionKey patterns)
+- Configurable risk thresholds and alert rules
+- Push notifications for critical risk changes
+
 ## Dependencies and Sequencing
 
 ```
 Backend Persistence
-  └── Authentication / RBAC
-        └── Workload Tracking
-              └── ACWR / Injury Risk
-                    └── Analytics / Trends
+  ├── Authentication / RBAC
+  └── Analytics / Trends
+        └── Advanced Risk Features
 ```
 
-Backend persistence is the critical-path blocker. Everything else depends on real data storage.
+Backend persistence is the critical-path blocker for multi-user and historical features. ACWR computation and basic risk display already work with mock data.
 
-Authentication can be implemented in parallel with backend persistence but must be complete before multi-user features.
-
-Body map `regionKey` is already the designed join key for ACWR, so no body map refactoring is needed when load/risk features are built.
+Body map `regionKey` is the designed join key for per-muscle-group risk correlation.
 
 ## Risks and Open Decisions
 

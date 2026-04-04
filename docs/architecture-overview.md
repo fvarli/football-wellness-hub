@@ -14,28 +14,47 @@ football-wellness-hub/
       players/page.tsx         Player list
       players/[id]/page.tsx    Player detail (server component, async params)
       wellness/page.tsx        Squad wellness overview
+      workload/page.tsx        Training session list + workload summary
+      workload/log/page.tsx    Training session creation form
       check-in/page.tsx        Player daily check-in
+      api/
+        wellness/check-in/route.ts   POST — submit wellness check-in
+        sessions/route.ts            POST — log training session
     components/
       app-shell.tsx            Layout wrapper (sidebar + header + content)
       sidebar.tsx              Navigation with role-aware sections
       header.tsx               Top bar with title, notification, avatar
       stat-card.tsx            Dashboard stat card
       wellness-badge.tsx       Colored score badge
+      risk-badge.tsx           RiskLevelBadge, TrendBadge, AcwrValue presentational helpers
       rating-input.tsx         1-10 button group for wellness metrics
       wellness-form.tsx        Full check-in form (metrics + body map + notes)
+      session-form.tsx         Training session creation form (type + duration + RPE)
       body-map.tsx             Interactive body map (selection state, picker, list)
       body-map-summary.tsx     Read-only body map summary for detail pages
       male-front-svg.tsx       Anatomical male front SVG with clickable regions
       male-back-svg.tsx        Anatomical male back SVG with clickable regions
     lib/
-      types.ts                 Shared TypeScript types
+      types.ts                 Shared TypeScript types (Player, WellnessEntry, BodyMapSelection, TrainingSession, PlayerRiskSnapshot)
       body-regions.ts          Canonical muscle region registry + view mapping
-      mock-data.ts             Demo players, wellness entries, body map entries
+      validation.ts            Input validation for write operations (pure, no side effects)
+      db.ts                    Prisma client singleton (PostgreSQL via @prisma/adapter-pg)
+      data/
+        service.ts             Async data access service — reads + writes via Prisma, single import point for pages and API routes
+      mock-data.ts             Seed data arrays (used by prisma/seed.ts, not imported by pages)
+      risk.ts                  Pure computation: ACWR, wellness trend, soreness flags, risk level
     test/
       setup.ts                 Vitest setup (jest-dom matchers)
       vitest.d.ts              Type declarations for Vitest globals + jest-dom
       body-regions.test.ts     Data model tests (16 cases)
       body-map.test.tsx        Component interaction tests (12 cases)
+      training-sessions.test.ts  Training session data tests (8 cases)
+      risk.test.ts             Risk computation unit tests (30 cases)
+      risk-badge.test.tsx      Risk badge component tests (9 cases)
+      validation.test.ts       Input validation tests (18 cases)
+      service-writes.test.ts   Write service integration tests (4 cases)
+      wellness-form.test.tsx   Wellness form submit flow tests (5 cases)
+      session-form.test.tsx    Session form submit flow tests (6 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config
@@ -44,7 +63,7 @@ football-wellness-hub/
 
 ## Page Rendering Model
 
-- **Server components** (default): Dashboard, player detail, wellness overview. These read mock data at build/request time.
+- **Server components** (default): Dashboard, player detail, wellness overview, workload, players list. These read from PostgreSQL via Prisma at request time (`force-dynamic`).
 - **Client components** (`"use client"`): Sidebar, header, body map, wellness form, rating input. These manage interactive state.
 - **Dynamic routes**: `/players/[id]` uses Next.js 16 async `params` (`await params`).
 - **Redirect**: `/` redirects to `/dashboard` via `next/navigation`.
@@ -60,7 +79,7 @@ User interaction
           → CSS currentColor drives severity fill
 ```
 
-There is no global state management (no Redux, no Zustand, no Context). Each page manages its own data. The check-in form owns wellness ratings, body map selections, and notes as local state, then submits them together.
+There is no global state management (no Redux, no Zustand, no Context). Each page manages its own data. Server components `await` async functions from `src/lib/data/service.ts`, which queries PostgreSQL via Prisma. Client components (`check-in`, `log session`) post to API routes. The `players-list.tsx` client component receives pre-fetched data from its server component wrapper.
 
 ### Body Map Data Flow
 
@@ -110,8 +129,7 @@ Both mobile and desktop SVG containers render simultaneously in jsdom (no CSS me
 
 | Constraint | Impact |
 |---|---|
-| No backend | All data is client-side mock. Form submissions update local state only. |
-| No database | No persistence across page reloads. |
+| PostgreSQL required | Data is persisted in PostgreSQL via Prisma. Requires `npm run db:migrate` + `npm run db:seed` for first run. |
 | No authentication | Routes are structurally role-aware (Staff / Player / System sections) but no access control. |
 | No real-time updates | No WebSocket or polling. Each page loads its own data. |
 | Male body map only | No female anatomical SVG. |
