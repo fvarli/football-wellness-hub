@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { BodyMapView, BodyMapSelection, BodySide } from "@/lib/types";
-import { getRegionMeta, getPrimaryView } from "@/lib/body-regions";
+import { getRegionMeta, getPrimaryView, getRegionViews } from "@/lib/body-regions";
 import MaleFrontSvg from "./male-front-svg";
 import MaleBackSvg from "./male-back-svg";
 import { X, Hand } from "lucide-react";
@@ -176,9 +176,10 @@ export default function BodyMap({ selections, onChange, readOnly }: BodyMapProps
 
   function handleRegionClick(key: string) {
     if (readOnly) return;
+    // Toggle editor focus. No selection is created here — the user must
+    // explicitly choose a severity in the picker to persist the entry.
     setActiveKey((prev) => (prev === key ? null : key));
-    const view = getPrimaryView(key);
-    setMobileView(view);
+    setMobileView(getPrimaryView(key));
   }
 
   function handleSeverityChange(severity: number) {
@@ -206,8 +207,9 @@ export default function BodyMap({ selections, onChange, readOnly }: BodyMapProps
     setMobileView(getPrimaryView(key));
   }
 
-  const frontCount = selections.filter((s) => getPrimaryView(s.regionKey) === "front").length;
-  const backCount = selections.length - frontCount;
+  // Badge counts: a shared region (e.g. calf) counts toward BOTH tabs
+  const frontCount = selections.filter((s) => getRegionViews(s.regionKey).includes("front")).length;
+  const backCount = selections.filter((s) => getRegionViews(s.regionKey).includes("back")).length;
 
   const svgProps = {
     selections: selMap,

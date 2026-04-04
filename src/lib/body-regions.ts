@@ -40,7 +40,7 @@
  * right_quadriceps      ✓
  * left_calf             ✓       ✓       tibialis (front) / gastrocnemius (back)
  * right_calf            ✓       ✓
- * traps                         ✓       trapezius
+ * traps                 ✓       ✓       trapezius (upper fibers visible front)
  * left_triceps                  ✓       back upper arm
  * right_triceps                 ✓
  * left_latissimus               ✓       latissimus dorsi
@@ -124,7 +124,7 @@ const REGION_VIEWS: Record<string, BodyMapView[]> = {
   right_quadriceps: ["front"],
   left_calf:        ["front", "back"],
   right_calf:       ["front", "back"],
-  traps:            ["back"],
+  traps:            ["front", "back"],
   left_triceps:     ["back"],
   right_triceps:    ["back"],
   left_latissimus:  ["back"],
