@@ -57,7 +57,7 @@ export const bodyMapEntries: Record<string, BodyMapSelection[]> = {
   ],
   // Jonas Eriksen (resting) — left calf (back view gastrocnemius)
   w13: [
-    { regionKey: "left_calf_back", label: "L. Calf", view: "back", side: "left", severity: 4 },
+    { regionKey: "left_calf", label: "L. Calf", view: "back", side: "left", severity: 4 },
   ],
 };
 
