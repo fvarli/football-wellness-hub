@@ -95,7 +95,7 @@ export default function WellnessForm({ playerName, onSubmit }: WellnessFormProps
         />
       ))}
 
-      {/* Body Map section — collapsible */}
+      {/* Body Soreness Map — collapsible */}
       <div className="rounded-lg border border-card-border">
         <button
           type="button"
@@ -114,7 +114,7 @@ export default function WellnessForm({ playerName, onSubmit }: WellnessFormProps
             <p className="mt-0.5 text-xs text-muted">
               {bodySelections.length > 0
                 ? `${bodySelections.length} area${bodySelections.length > 1 ? "s" : ""} marked`
-                : "Tap to mark sore areas (optional)"}
+                : "Tap to mark sore muscle groups (optional)"}
             </p>
           </div>
           {bodyMapOpen ? (

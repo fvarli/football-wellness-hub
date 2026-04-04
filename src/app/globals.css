@@ -46,3 +46,40 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* ── Anatomical body map muscle region styles ── */
+
+.body-base {
+  color: #d1d5db;
+}
+
+.muscle-region path {
+  fill: currentColor;
+  transition: fill 0.15s ease, opacity 0.15s ease;
+}
+
+/* Default (unselected): muted neutral fill */
+.muscle-region {
+  color: #e5e7eb;
+}
+.muscle-region:not([style*="color"]) {
+  color: #e5e7eb;
+}
+
+/* Hover: slightly emphasized */
+.muscle-region:hover {
+  color: #cbd5e1;
+}
+
+/* When selected, the inline style sets color to the severity fill.
+   The hover on selected just brightens slightly. */
+.muscle-region[style*="color"]:hover path {
+  opacity: 0.85;
+}
+
+/* Active region (being edited): blue outline glow */
+.active-region path {
+  stroke: #3b82f6;
+  stroke-width: 1.5;
+  paint-order: stroke;
+}

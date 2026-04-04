@@ -1,168 +1,76 @@
 "use client";
 
 import { useState } from "react";
-import {
-  BODY_REGIONS,
-  type BodyView,
-  type BodyMapSelection,
-  type BodyRegionDef,
-} from "@/lib/types";
+import type { BodyMapView, BodyMapSelection, BodySide } from "@/lib/types";
+import { getRegionMeta, getPrimaryView } from "@/lib/body-regions";
+import MaleFrontSvg from "./male-front-svg";
+import MaleBackSvg from "./male-back-svg";
+import { X, Hand } from "lucide-react";
 
-// ── SVG body silhouette path (shared between front & back) ──
-const BODY_PATH =
-  "M100,16 C82,16 76,32 76,42 C76,52 84,60 90,63 L90,74 " +
-  "L56,84 Q36,90 34,116 L32,174 L42,176 L44,118 Q46,96 58,90 " +
-  "L64,130 L62,172 L68,200 L74,208 L78,250 L76,296 L74,340 L70,376 L66,398 " +
-  "L84,398 L82,376 L82,340 L84,296 L88,250 L96,214 L100,208 " +
-  "L104,214 L112,250 L116,296 L118,340 L118,376 L116,398 " +
-  "L134,398 L130,376 L126,340 L124,296 L122,250 L126,208 L132,200 " +
-  "L138,172 L136,130 L142,90 Q154,96 156,118 L158,176 L168,174 " +
-  "L166,116 Q164,90 144,84 L110,74 L110,63 " +
-  "C116,60 124,52 124,42 C124,32 118,16 100,16 Z";
+/* ── Severity styling ── */
 
-function severityColor(severity: number): string {
-  if (severity <= 3) return "#fbbf24"; // amber-400
-  if (severity <= 6) return "#f97316"; // orange-500
-  return "#ef4444"; // red-500
+function sevFill(s: number): string {
+  if (s <= 3) return "rgba(250,204,21,0.5)";
+  if (s <= 6) return "rgba(249,115,22,0.55)";
+  return "rgba(239,68,68,0.6)";
+}
+function sevStroke(s: number): string {
+  if (s <= 3) return "#eab308";
+  if (s <= 6) return "#ea580c";
+  return "#dc2626";
+}
+function sevLabel(s: number): string {
+  if (s <= 3) return "Mild";
+  if (s <= 6) return "Moderate";
+  return "Severe";
 }
 
-function severityFill(severity: number): string {
-  if (severity <= 3) return "rgba(251,191,36,0.35)";
-  if (severity <= 6) return "rgba(249,115,22,0.4)";
-  return "rgba(239,68,68,0.45)";
-}
+/* ── Severity picker ── */
 
-// ── Region ellipse ──
-function RegionEllipse({
-  region,
-  selection,
-  active,
-  onClick,
-  readOnly,
-}: {
-  region: BodyRegionDef;
-  selection?: BodyMapSelection;
-  active: boolean;
-  onClick: () => void;
-  readOnly?: boolean;
-}) {
-  const hasSelection = !!selection;
-  const sev = selection?.severity ?? 0;
-
-  let fill = "rgba(148,163,184,0.15)"; // default: slate hint
-  let stroke = "#94a3b8";
-  let strokeW = 1;
-
-  if (hasSelection) {
-    fill = severityFill(sev);
-    stroke = severityColor(sev);
-    strokeW = 2;
-  }
-  if (active) {
-    stroke = "#3b82f6";
-    strokeW = 2.5;
-  }
-
-  return (
-    <ellipse
-      cx={region.cx}
-      cy={region.cy}
-      rx={region.rx}
-      ry={region.ry}
-      fill={fill}
-      stroke={stroke}
-      strokeWidth={strokeW}
-      className={readOnly ? "" : "cursor-pointer"}
-      onClick={readOnly ? undefined : onClick}
-      strokeDasharray={hasSelection ? undefined : "3 2"}
-    >
-      <title>{region.label}{hasSelection ? ` — severity ${sev}` : ""}</title>
-    </ellipse>
-  );
-}
-
-// ── Body SVG panel ──
-function BodyPanel({
-  view,
-  selections,
-  activeRegion,
-  onRegionClick,
-  readOnly,
-}: {
-  view: BodyView;
-  selections: BodyMapSelection[];
-  activeRegion: string | null;
-  onRegionClick: (id: string) => void;
-  readOnly?: boolean;
-}) {
-  const regions = BODY_REGIONS.filter((r) => r.view === view);
-  const selMap = new Map(selections.map((s) => [s.regionId, s]));
-
-  return (
-    <svg viewBox="0 0 200 414" className="mx-auto h-full max-h-[340px] w-auto">
-      {/* Silhouette */}
-      <path d={BODY_PATH} fill="#e2e8f0" stroke="#cbd5e1" strokeWidth={1} />
-      {/* Clickable regions */}
-      {regions.map((r) => (
-        <RegionEllipse
-          key={r.id}
-          region={r}
-          selection={selMap.get(r.id)}
-          active={activeRegion === r.id}
-          onClick={() => onRegionClick(r.id)}
-          readOnly={readOnly}
-        />
-      ))}
-      {/* View label */}
-      <text x="100" y="410" textAnchor="middle" fontSize="11" fill="#94a3b8" fontWeight={500}>
-        {view === "front" ? "FRONT" : "BACK"}
-      </text>
-    </svg>
-  );
-}
-
-// ── Severity picker ──
 function SeverityPicker({
-  regionLabel,
+  label,
   severity,
   onChange,
   onRemove,
 }: {
-  regionLabel: string;
+  label: string;
   severity: number | null;
   onChange: (v: number) => void;
   onRemove: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-info/30 bg-info-light/40 p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-sm font-semibold text-foreground">{regionLabel}</p>
+    <div className="rounded-lg border border-card-border bg-white p-3 shadow-sm">
+      <div className="mb-2.5 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-foreground">{label}</p>
+          <p className="text-[11px] text-muted">1 = minimal &middot; 10 = severe</p>
+        </div>
         {severity != null && (
           <button
             type="button"
             onClick={onRemove}
-            className="text-xs font-medium text-danger hover:underline"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-danger hover:bg-danger-light transition-colors"
           >
+            <X className="h-3 w-3" />
             Remove
           </button>
         )}
       </div>
-      <p className="mb-2 text-xs text-muted">Severity: 1 = minimal, 10 = severe</p>
       <div className="flex gap-1">
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => {
           const selected = severity === n;
-          let bg = "bg-gray-100 text-gray-400 hover:bg-gray-200";
+          let cls = "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100";
           if (selected) {
-            if (n <= 3) bg = "bg-amber-400 text-white";
-            else if (n <= 6) bg = "bg-orange-500 text-white";
-            else bg = "bg-red-500 text-white";
+            if (n <= 3) cls = "bg-yellow-400 text-white border-yellow-500";
+            else if (n <= 6) cls = "bg-orange-500 text-white border-orange-600";
+            else cls = "bg-red-500 text-white border-red-600";
           }
           return (
             <button
               key={n}
               type="button"
               onClick={() => onChange(n)}
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold transition-all ${bg}`}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border text-xs font-bold transition-all ${cls}`}
             >
               {n}
             </button>
@@ -173,7 +81,65 @@ function SeverityPicker({
   );
 }
 
-// ── Main BodyMap component ──
+/* ── Selected regions list ── */
+
+function SelectionList({
+  selections,
+  activeKey,
+  onSelect,
+  onRemove,
+  readOnly,
+}: {
+  selections: BodyMapSelection[];
+  activeKey: string | null;
+  onSelect: (key: string) => void;
+  onRemove: (key: string) => void;
+  readOnly?: boolean;
+}) {
+  const sorted = [...selections].sort((a, b) => b.severity - a.severity);
+  return (
+    <div className="space-y-1.5">
+      {sorted.map((s) => (
+        <div
+          key={s.regionKey}
+          className={`flex items-center justify-between rounded-lg border px-3 py-2 transition-colors ${
+            activeKey === s.regionKey
+              ? "border-blue-300 bg-blue-50/50"
+              : "border-card-border bg-white"
+          } ${readOnly ? "" : "cursor-pointer hover:bg-gray-50"}`}
+          onClick={readOnly ? undefined : () => onSelect(s.regionKey)}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-[11px] font-bold text-white"
+              style={{ backgroundColor: sevStroke(s.severity) }}
+            >
+              {s.severity}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-foreground">{s.label}</p>
+              <p className="text-[10px] text-muted capitalize">
+                {s.view} &middot; {s.side ?? "center"} &middot; {sevLabel(s.severity)}
+              </p>
+            </div>
+          </div>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onRemove(s.regionKey); }}
+              className="ml-2 rounded-md p-1 text-muted hover:bg-gray-100 hover:text-danger transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Main BodyMap component ── */
+
 interface BodyMapProps {
   selections: BodyMapSelection[];
   onChange?: (selections: BodyMapSelection[]) => void;
@@ -181,56 +147,84 @@ interface BodyMapProps {
 }
 
 export default function BodyMap({ selections, onChange, readOnly }: BodyMapProps) {
-  const [view, setView] = useState<BodyView>("front");
-  const [activeRegion, setActiveRegion] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<BodyMapView>("front");
+  const [activeKey, setActiveKey] = useState<string | null>(null);
 
-  const activeRegionDef = BODY_REGIONS.find((r) => r.id === activeRegion);
-  const activeSel = selections.find((s) => s.regionId === activeRegion);
+  const activeMeta = activeKey ? getRegionMeta(activeKey) : null;
+  const activeSel = selections.find((s) => s.regionKey === activeKey);
 
-  function handleRegionClick(id: string) {
+  // Build a Map<regionKey, severity> for fast SVG lookups
+  const selMap = new Map(selections.map((s) => [s.regionKey, s.severity]));
+
+  function handleRegionClick(key: string) {
     if (readOnly) return;
-    setActiveRegion((prev) => (prev === id ? null : id));
-    // Switch view if the clicked region is on the other side
-    const region = BODY_REGIONS.find((r) => r.id === id);
-    if (region && region.view !== view) setView(region.view);
+    setActiveKey((prev) => (prev === key ? null : key));
+    const view = getPrimaryView(key);
+    setMobileView(view);
   }
 
   function handleSeverityChange(severity: number) {
-    if (!activeRegion || !onChange) return;
-    const next = selections.filter((s) => s.regionId !== activeRegion);
-    next.push({ regionId: activeRegion, severity });
+    if (!activeKey || !activeMeta || !onChange) return;
+    const next = selections.filter((s) => s.regionKey !== activeKey);
+    next.push({
+      regionKey: activeKey,
+      label: activeMeta.label,
+      view: getPrimaryView(activeKey),
+      side: activeMeta.side as BodySide | null,
+      severity,
+    });
     onChange(next);
   }
 
-  function handleRemove() {
-    if (!activeRegion || !onChange) return;
-    onChange(selections.filter((s) => s.regionId !== activeRegion));
-    setActiveRegion(null);
+  function handleRemove(key?: string) {
+    const k = key ?? activeKey;
+    if (!k || !onChange) return;
+    onChange(selections.filter((s) => s.regionKey !== k));
+    if (k === activeKey) setActiveKey(null);
   }
+
+  function handleSelectFromList(key: string) {
+    setActiveKey((prev) => (prev === key ? null : key));
+    setMobileView(getPrimaryView(key));
+  }
+
+  const frontCount = selections.filter((s) => getPrimaryView(s.regionKey) === "front").length;
+  const backCount = selections.length - frontCount;
+
+  const svgProps = {
+    selections: selMap,
+    activeKey,
+    readOnly,
+    onRegionClick: handleRegionClick,
+    sevFill,
+    sevStroke,
+  };
 
   return (
     <div>
-      {/* View tabs */}
-      <div className="mb-3 flex justify-center gap-1">
-        {(["front", "back"] as BodyView[]).map((v) => {
-          const count = selections.filter((s) => {
-            const r = BODY_REGIONS.find((b) => b.id === s.regionId);
-            return r?.view === v;
-          }).length;
+      {/* Perspective note */}
+      <p className="mb-3 text-center text-[10px] text-muted tracking-wide">
+        Shown as your own body &mdash; left is your left
+      </p>
+
+      {/* ── Mobile tabs (below md) ── */}
+      <div className="mb-3 flex justify-center gap-1.5 md:hidden">
+        {(["front", "back"] as BodyMapView[]).map((v) => {
+          const count = v === "front" ? frontCount : backCount;
           return (
             <button
               key={v}
               type="button"
-              onClick={() => { setView(v); setActiveRegion(null); }}
-              className={`rounded-lg px-4 py-1.5 text-xs font-semibold capitalize transition-colors ${
-                view === v
-                  ? "bg-foreground text-white"
+              onClick={() => { setMobileView(v); setActiveKey(null); }}
+              className={`rounded-lg px-5 py-2 text-xs font-semibold capitalize transition-colors ${
+                mobileView === v
+                  ? "bg-foreground text-white shadow-sm"
                   : "bg-gray-100 text-muted hover:bg-gray-200"
               }`}
             >
               {v}
               {count > 0 && (
-                <span className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-danger text-[10px] text-white">
+                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                   {count}
                 </span>
               )}
@@ -239,47 +233,69 @@ export default function BodyMap({ selections, onChange, readOnly }: BodyMapProps
         })}
       </div>
 
-      {/* Body SVG */}
-      <div className="flex justify-center">
-        <BodyPanel
-          view={view}
-          selections={selections}
-          activeRegion={activeRegion}
-          onRegionClick={handleRegionClick}
-          readOnly={readOnly}
-        />
+      {/* ── Mobile: single panel ── */}
+      <div className="md:hidden flex flex-col items-center">
+        <div className="w-full max-w-[220px]" style={{ minHeight: 360 }}>
+          {mobileView === "front" ? (
+            <MaleFrontSvg {...svgProps} />
+          ) : (
+            <MaleBackSvg {...svgProps} />
+          )}
+        </div>
+        <span className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted">
+          {mobileView}
+        </span>
       </div>
 
-      {/* Severity picker (shown when a region is active) */}
-      {!readOnly && activeRegionDef && (
-        <div className="mt-3">
+      {/* ── Desktop: side-by-side ── */}
+      <div className="hidden md:grid md:grid-cols-2 md:gap-6">
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-[190px]" style={{ minHeight: 320 }}>
+            <MaleFrontSvg {...svgProps} />
+          </div>
+          <span className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted">Front</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-[170px]" style={{ minHeight: 320 }}>
+            <MaleBackSvg {...svgProps} />
+          </div>
+          <span className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted">Back</span>
+        </div>
+      </div>
+
+      {/* ── Severity picker ── */}
+      {!readOnly && activeMeta && (
+        <div className="mt-4">
           <SeverityPicker
-            regionLabel={activeRegionDef.label}
+            label={activeMeta.label}
             severity={activeSel?.severity ?? null}
             onChange={handleSeverityChange}
-            onRemove={handleRemove}
+            onRemove={() => handleRemove()}
           />
         </div>
       )}
 
-      {/* Selection legend for read-only */}
-      {readOnly && selections.length > 0 && (
-        <div className="mt-3 space-y-1">
-          {selections.map((s) => {
-            const region = BODY_REGIONS.find((r) => r.id === s.regionId);
-            if (!region) return null;
-            return (
-              <div key={s.regionId} className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-1.5">
-                <span className="text-xs font-medium text-foreground">{region.label}</span>
-                <span
-                  className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold text-white"
-                  style={{ backgroundColor: severityColor(s.severity) }}
-                >
-                  {s.severity}/10
-                </span>
-              </div>
-            );
-          })}
+      {/* ── Empty state ── */}
+      {!readOnly && selections.length === 0 && !activeKey && (
+        <div className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 py-4 text-xs text-muted">
+          <Hand className="h-4 w-4" />
+          Select muscle groups with soreness, tightness, or pain
+        </div>
+      )}
+
+      {/* ── Selected areas summary ── */}
+      {selections.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+            Selected Areas ({selections.length})
+          </p>
+          <SelectionList
+            selections={selections}
+            activeKey={activeKey}
+            onSelect={handleSelectFromList}
+            onRemove={handleRemove}
+            readOnly={readOnly}
+          />
         </div>
       )}
     </div>
