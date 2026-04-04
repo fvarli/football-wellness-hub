@@ -44,17 +44,20 @@ Alternative: Supabase (hosted Postgres + auth + realtime). Lower ops burden but 
 
 ### Step 1 — Add Prisma + schema (no behavior change)
 - `npx prisma init`
-- Define schema matching the current TypeScript interfaces
+- Define schema per `docs/database-schema.md`
+- Body map selections stored as normalized child rows (`wellness_body_map_selections`), not JSONB
+- The data service assembles `WellnessEntry.bodyMap: BodyMapSelection[]` on read and decomposes on write — the application/API shape stays the same
 - Generate Prisma client
 - Seed database from mock data arrays
 
 ### Step 2 — Replace service internals
 - Change `src/lib/data/service.ts` function bodies from array reads to Prisma queries
 - Make functions `async`
+- Wellness reads include `bodyMapSelections` via Prisma `include` and map to the `bodyMap` array
 - Update pages to `await` the data calls (server components already support this)
 
 ### Step 3 — Add write endpoints
-- API route for wellness check-in submission (POST)
+- API route for wellness check-in submission (POST) — decomposes `bodyMap` array into child rows
 - API route for training session creation (POST)
 - Client components call these routes
 

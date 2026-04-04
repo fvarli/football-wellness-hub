@@ -31,7 +31,6 @@ Target schema for when persistence is added. Not implemented yet — this is the
 | stress | INTEGER | 1-10 |
 | mood | INTEGER | 1-10 |
 | overall_score | DECIMAL(3,1) | Derived: mean of 6 metrics. Stored for fast reads. |
-| body_map | JSONB | Array of BodyMapSelection objects |
 | notes | TEXT | Nullable |
 | submitted_by | FK → users.id | Future: who submitted (player or coach on behalf) |
 | created_at | TIMESTAMP | Auto-set |
@@ -53,36 +52,45 @@ Target schema for when persistence is added. Not implemented yet — this is the
 | created_at | TIMESTAMP | Auto-set |
 | updated_at | TIMESTAMP | Auto-set on update |
 
+### wellness_body_map_selections
+
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID / CUID | Primary key |
+| wellness_entry_id | FK → wellness_entries.id | Not null, cascade delete |
+| region_key | TEXT | Canonical muscle key (e.g. "left_hamstring"). Not null. |
+| label | TEXT | Human-readable label at time of entry |
+| view | TEXT | "front" or "back" — which SVG view was used |
+| side | TEXT | "left", "right", "center", or null |
+| severity | INTEGER | 1-10 |
+
 ## Body Map Storage Decision
 
-**Embedded JSON (JSONB column) in wellness_entries.**
+**Normalized child rows in `wellness_body_map_selections`, not embedded JSONB.**
 
 Reasons:
-- Body map selections are always read/written together with the wellness entry
-- No cross-entry queries needed on individual selections (risk computation reads all entries for a player and processes in application code)
-- JSON serialization shape matches the TypeScript interface exactly
-- No join overhead
-- Simpler schema
+- Future analytics require SQL-level queries on `region_key` — e.g. "all entries where left_hamstring severity > 7 in the last 30 days"
+- Soreness recurrence tracking (which muscles are flagged repeatedly) is a core product feature that benefits from indexed `region_key` queries
+- Per-muscle risk rules will join `region_key` across body map selections and training session data
+- Database-level aggregation (COUNT, AVG severity per region per player) avoids loading and parsing JSON blobs in application code
+- Proper foreign key constraints ensure referential integrity
 
-A child table (`body_map_selections` with FK to wellness_entries) would be justified if:
-- We need SQL-level queries like "all entries where left_hamstring severity > 7"
-- We need database-level indexing on regionKey or severity
+### Application/API shape stays embedded
 
-For now, JSONB is the right choice. The risk computation module already handles filtering in application code.
+The TypeScript interface remains `WellnessEntry.bodyMap: BodyMapSelection[]`. The data access service assembles the embedded array on read and decomposes it on write. Pages never see the normalized structure.
 
-### JSONB Shape
-
-```json
-[
-  {
-    "regionKey": "left_hamstring",
-    "label": "L. Hamstring",
-    "view": "back",
-    "side": "right",
-    "severity": 7
-  }
-]
 ```
+Database:  wellness_entries  ←1:N→  wellness_body_map_selections
+API/App:   WellnessEntry.bodyMap: BodyMapSelection[]
+```
+
+### Why not JSONB
+
+JSONB would be simpler initially but creates problems as the product matures:
+- No foreign key or type constraints on individual selections
+- No database-level indexing on `region_key` or `severity`
+- Aggregation queries require JSON extraction functions which are slower and harder to optimize
+- Schema changes to the selection shape require data migration of blob contents
 
 ## Indexes
 
@@ -90,6 +98,8 @@ For now, JSONB is the right choice. The risk computation module already handles 
 |---|---|---|---|
 | wellness_entries | unique | (player_id, date) | One entry per player per day |
 | wellness_entries | btree | (player_id, date DESC) | Fast player wellness history query |
+| wellness_body_map_selections | btree | (wellness_entry_id) | Fast join to parent entry |
+| wellness_body_map_selections | btree | (region_key, severity) | Per-muscle analytics and risk queries |
 | training_sessions | btree | (player_id, date DESC) | Fast player session history query |
 | training_sessions | btree | (date DESC) | Squad-wide session listing |
 
@@ -132,7 +142,7 @@ model Player {
 model WellnessEntry {
   id           String   @id @default(cuid())
   playerId     String
-  date         String   // ISO YYYY-MM-DD
+  date         String
   fatigue      Int
   soreness     Int
   sleepQuality Int
@@ -140,21 +150,36 @@ model WellnessEntry {
   stress       Int
   mood         Int
   overallScore Float
-  bodyMap      Json     @default("[]")
   notes        String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  player Player @relation(fields: [playerId], references: [id])
+  player       Player @relation(fields: [playerId], references: [id])
+  bodyMapSelections WellnessBodyMapSelection[]
 
   @@unique([playerId, date])
   @@index([playerId, date(sort: Desc)])
 }
 
+model WellnessBodyMapSelection {
+  id              String @id @default(cuid())
+  wellnessEntryId String
+  regionKey       String
+  label           String
+  view            String
+  side            String?
+  severity        Int
+
+  wellnessEntry WellnessEntry @relation(fields: [wellnessEntryId], references: [id], onDelete: Cascade)
+
+  @@index([wellnessEntryId])
+  @@index([regionKey, severity])
+}
+
 model TrainingSession {
   id              String   @id @default(cuid())
   playerId        String
-  date            String   // ISO YYYY-MM-DD
+  date            String
   type            String
   durationMinutes Int
   rpe             Int

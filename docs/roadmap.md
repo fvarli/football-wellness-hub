@@ -70,7 +70,7 @@
 - Pages no longer import `mock-data.ts` directly
 - Persistence planning docs: `persistence-plan.md`, `data-access-layer.md`, `database-schema.md`
 - Recommended stack: Next.js API routes + Prisma + PostgreSQL
-- Body map storage decision: embedded JSONB (not child rows)
+- Body map storage decision: normalized child rows for analytics (API shape stays embedded)
 - Database schema with indexes, audit fields, Prisma preview
 - Migration path from mock arrays → Prisma queries documented
 

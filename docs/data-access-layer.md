@@ -74,6 +74,22 @@ When the service functions become `async` (backed by Prisma or API calls):
 2. Client components (`players` list) will need to move data fetching to a server component wrapper or use `use()` / SWR.
 3. The function signatures in `service.ts` change from `() => T` to `() => Promise<T>`.
 
+## Body Map Shape: API vs Database
+
+The application/API shape is always `WellnessEntry.bodyMap: BodyMapSelection[]`. Pages and components see an embedded array.
+
+The database stores body map data as **normalized child rows** in `wellness_body_map_selections` (see `docs/database-schema.md`). The data service is responsible for:
+- **On read:** joining child rows and assembling the `bodyMap` array
+- **On write:** decomposing the `bodyMap` array into child row inserts
+
+This normalization enables SQL-level queries on `region_key` for analytics, recurrence tracking, and per-muscle risk rules.
+
+## Service Design Notes
+
+- **Read-only for now.** Write operations (check-in submission, session creation) are deferred until backend API routes are implemented.
+- **Thin by design.** The service is a single file of concrete functions, not an abstract interface hierarchy. This is appropriate for the current prototype phase.
+- **If the service grows,** split by domain into separate modules: `data/players.ts`, `data/wellness.ts`, `data/sessions.ts`, `data/risk.ts`. Keep the current `service.ts` as a barrel re-export so page imports don't change.
+
 ## Files
 
 | File | Role |

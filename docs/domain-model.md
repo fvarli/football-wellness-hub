@@ -212,7 +212,7 @@ interface SorenessFlag {
 |---|---|---|
 | Player list | Mock array in `mock-data.ts` | Database table |
 | Wellness entries | Mock array in `mock-data.ts` | Database table |
-| Body map selections | Embedded in `WellnessEntry.bodyMap` in `mock-data.ts` | Database (JSON column or child table within wellness entry) |
+| Body map selections | Embedded in `WellnessEntry.bodyMap` in `mock-data.ts` | Normalized child rows (`wellness_body_map_selections`); API shape stays embedded |
 | Training sessions | **Types defined**, no mock data yet | Database table |
 | Risk snapshots | **Types defined**, no computation yet | Database table or materialized view |
 | Canonical muscle regions | Static registry in `body-regions.ts` | **Stays frontend.** This is UI metadata, not user data. |

@@ -7,8 +7,14 @@
  * Design decisions:
  * - Concrete functions, not abstract interfaces. We have one implementation.
  * - Synchronous for now. When backend arrives, signatures become async.
+ * - Read-only. Write operations are deferred until backend API routes exist.
  * - Risk snapshots are computed on-the-fly from source data.
  * - asOfDate defaults to MOCK_AS_OF but is parameterized for testability.
+ *
+ * Growth path:
+ * If this file grows beyond ~15 functions, split by domain into
+ * data/players.ts, data/wellness.ts, data/sessions.ts, data/risk.ts
+ * and re-export from this file so page imports stay unchanged.
  */
 
 import type {
