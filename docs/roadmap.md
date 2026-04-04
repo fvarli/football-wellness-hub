@@ -32,6 +32,14 @@
 - Vitest test suite (28 tests: data model + component interaction)
 - Architecture and QA documentation
 
+### Milestone 5 — Domain Model Foundation
+- Unified domain model design documented in `docs/domain-model.md`
+- Body map selections embedded directly in `WellnessEntry.bodyMap` (removed separate `bodyMapEntries` side-table)
+- `TrainingSession` and `SessionType` types defined for workload tracking
+- `PlayerRiskSnapshot`, `SorenessFlag`, `RiskLevel`, `TrendDirection` types defined for injury risk
+- Source-of-truth vs derived field classification documented
+- Phased implementation plan from frontend mock to backend persistence
+
 ## Current Stable Baseline
 
 The application is a **complete frontend prototype** with:

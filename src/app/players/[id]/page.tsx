@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
 import BodyMapSummary from "@/components/body-map-summary";
-import { getPlayer, getPlayerWellness, getLatestWellness, getBodyMapForEntry } from "@/lib/mock-data";
+import { getPlayer, getPlayerWellness, getLatestWellness } from "@/lib/mock-data";
 import { WELLNESS_METRICS } from "@/lib/types";
 
 const statusStyles: Record<string, string> = {
@@ -32,7 +32,7 @@ export default async function PlayerDetailPage({
 
   const entries = getPlayerWellness(player.id);
   const latest = getLatestWellness(player.id);
-  const latestBodyMap = latest ? getBodyMapForEntry(latest.id) : [];
+  const latestBodyMap = latest?.bodyMap ?? [];
 
   return (
     <AppShell title={player.name}>

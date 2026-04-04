@@ -28,9 +28,9 @@ football-wellness-hub/
       male-front-svg.tsx       Anatomical male front SVG with clickable regions
       male-back-svg.tsx        Anatomical male back SVG with clickable regions
     lib/
-      types.ts                 Shared TypeScript types
+      types.ts                 Shared TypeScript types (Player, WellnessEntry, BodyMapSelection, TrainingSession, PlayerRiskSnapshot)
       body-regions.ts          Canonical muscle region registry + view mapping
-      mock-data.ts             Demo players, wellness entries, body map entries
+      mock-data.ts             Demo players and wellness entries (body map embedded in entries)
     test/
       setup.ts                 Vitest setup (jest-dom matchers)
       vitest.d.ts              Type declarations for Vitest globals + jest-dom
