@@ -55,26 +55,45 @@ body {
 
 .muscle-region path {
   fill: currentColor;
-  transition: fill 0.15s ease, opacity 0.15s ease;
+  transition: fill 0.15s ease, opacity 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
 }
 
 /* Default (unselected): muted neutral fill */
 .muscle-region {
   color: #e5e7eb;
-}
-.muscle-region:not([style*="color"]) {
-  color: #e5e7eb;
+  outline: none;
 }
 
-/* Hover: slightly emphasized */
+/* Hover: emphasised fill + subtle stroke */
 .muscle-region:hover {
-  color: #cbd5e1;
+  color: #c8ced6;
+}
+.muscle-region:hover path {
+  stroke: #94a3b8;
+  stroke-width: 0.6;
+  paint-order: stroke;
 }
 
-/* When selected, the inline style sets color to the severity fill.
-   The hover on selected just brightens slightly. */
+/* Selected region hover: slight brightness lift */
 .muscle-region[style*="color"]:hover path {
   opacity: 0.85;
+  filter: brightness(1.08);
+}
+
+/* Keyboard focus-visible: clear blue ring */
+.muscle-region:focus-visible {
+  color: #bfdbfe;
+}
+.muscle-region:focus-visible path {
+  stroke: #3b82f6;
+  stroke-width: 1.2;
+  paint-order: stroke;
+}
+.muscle-region[style*="color"]:focus-visible path {
+  stroke: #2563eb;
+  stroke-width: 1.4;
+  paint-order: stroke;
+  filter: brightness(1.1);
 }
 
 /* Active region (being edited): blue outline glow */

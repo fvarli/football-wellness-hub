@@ -216,6 +216,7 @@ export default function BodyMap({ selections, onChange, readOnly }: BodyMapProps
     onRegionClick: handleRegionClick,
     sevFill,
     sevStroke,
+    getLabel: (key: string) => getRegionMeta(key)?.label ?? key,
   };
 
   return (
