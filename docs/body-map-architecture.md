@@ -80,9 +80,11 @@ Selections are self-describing so consumers don't need the region registry to re
 
 | Action | Result |
 |---|---|
-| Click unselected muscle | Creates selection with **severity 3**, opens severity picker |
+| Click unselected muscle | **Focuses** the region and opens the severity picker. No selection is persisted yet. |
+| Pick severity 1–10 on focused region | Creates the selection with the chosen severity |
+| Click away / click same muscle again | Closes picker. If no severity was chosen, nothing is persisted. |
 | Click already-selected muscle | Toggles severity picker open/closed (no duplicate created) |
-| Click severity 1–10 button | Updates that region's severity |
+| Click severity 1–10 on selected region | Updates that region's severity |
 | Click "Remove" in picker | Removes the selection entirely |
 | Click region in selected-areas list | Opens severity picker for that region |
 | Click X on list item | Removes the selection |

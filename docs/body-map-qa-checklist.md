@@ -4,7 +4,8 @@ Manual verification steps for the anatomical body soreness map feature.
 
 ## Selection
 
-- [ ] Click an unselected muscle region on the front view. It should highlight with mild severity color and the severity picker should appear showing 3 pre-selected.
+- [ ] Click an unselected muscle region on the front view. The severity picker should appear with no severity pre-selected. The region should not yet appear in the selected areas list.
+- [ ] Pick a severity (e.g. 5). The region should now appear in the selected areas list with the chosen severity and the SVG fill should update.
 - [ ] Click the same region again. The severity picker should close. The region stays selected.
 - [ ] Click a different region. The picker switches to the new region. Both regions remain in the selected list.
 - [ ] Verify no duplicate entries appear in the selected areas list when clicking a region multiple times.
@@ -62,6 +63,6 @@ Manual verification steps for the anatomical body soreness map feature.
 
 ## Automated Tests
 
-- [ ] Run `npm test` — all 25 tests should pass (16 data model + 9 component).
+- [ ] Run `npm test` — all 28 tests should pass (16 data model + 12 component).
 - [ ] Run `npm run build` — no errors.
 - [ ] Run `npm run lint` — no errors.
