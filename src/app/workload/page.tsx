@@ -19,8 +19,8 @@ function loadColor(load: number): string {
   return "text-red-600 font-bold";
 }
 
-export default function WorkloadPage() {
-  const sessions = getAllSessions();
+export default async function WorkloadPage() {
+  const sessions = await getAllSessions();
 
   const totalSessions = sessions.length;
   const avgLoad = totalSessions > 0

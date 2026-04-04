@@ -1,15 +1,14 @@
 /**
  * Data access service — the single entry point for all data reads and writes.
  *
- * Currently backed by in-memory mock arrays. When a real backend is
- * added, replace the function bodies here. No page code needs to change.
+ * Backed by Prisma + PostgreSQL. Body map selections are stored as normalized
+ * child rows but assembled into WellnessEntry.bodyMap arrays on read.
  *
  * Design decisions:
- * - Concrete functions, not abstract interfaces. We have one implementation.
- * - Synchronous for now. When backend arrives, signatures become async.
- * - Write methods validate input via validation.ts, then mutate in-memory arrays.
- * - Risk snapshots are computed on-the-fly from source data.
- * - asOfDate defaults to MOCK_AS_OF but is parameterized for testability.
+ * - All functions are async (database-backed).
+ * - Write methods validate input via validation.ts, then persist via Prisma.
+ * - Risk snapshots are computed on-the-fly from persisted source data.
+ * - MOCK_AS_OF is kept for backward compat; pages should migrate to real dates.
  *
  * Growth path:
  * If this file grows beyond ~20 functions, split by domain into
@@ -23,6 +22,7 @@ import type {
   TrainingSession,
   PlayerRiskSnapshot,
   RiskLevel,
+  BodyMapSelection,
 } from "@/lib/types";
 import { calculatePlayerRiskSnapshot } from "@/lib/risk";
 import {
@@ -33,86 +33,161 @@ import {
   type ValidatedWellnessCheckIn,
   type ValidatedTrainingSession,
 } from "@/lib/validation";
+import { prisma } from "@/lib/db";
 
-// ── Seed data (mock backend) ──
-import {
-  players as _players,
-  wellnessEntries as _wellness,
-  trainingSessions as _sessions,
-  MOCK_AS_OF,
-} from "@/lib/mock-data";
+/** Reference date for risk computations. Will become today's date once data is live. */
+export const MOCK_AS_OF = new Date().toISOString().slice(0, 10);
 
-export { MOCK_AS_OF };
+// ── Mappers (DB rows → app types) ──
+
+function mapPlayer(row: {
+  id: string; name: string; position: string; number: number; age: number; status: string;
+}): Player {
+  return { id: row.id, name: row.name, position: row.position, number: row.number, age: row.age, status: row.status as Player["status"] };
+}
+
+function mapWellnessEntry(row: {
+  id: string; playerId: string; date: string;
+  fatigue: number; soreness: number; sleepQuality: number; recovery: number; stress: number; mood: number;
+  overallScore: number; notes: string | null;
+  bodyMapSelections: { regionKey: string; label: string; view: string; side: string | null; severity: number }[];
+}): WellnessEntry {
+  return {
+    id: row.id,
+    playerId: row.playerId,
+    date: row.date,
+    fatigue: row.fatigue,
+    soreness: row.soreness,
+    sleepQuality: row.sleepQuality,
+    recovery: row.recovery,
+    stress: row.stress,
+    mood: row.mood,
+    overallScore: row.overallScore,
+    notes: row.notes ?? undefined,
+    bodyMap: row.bodyMapSelections.map((s) => ({
+      regionKey: s.regionKey,
+      label: s.label,
+      view: s.view as BodyMapSelection["view"],
+      side: s.side as BodyMapSelection["side"],
+      severity: s.severity,
+    })),
+  };
+}
+
+function mapSession(row: {
+  id: string; playerId: string; date: string; type: string;
+  durationMinutes: number; rpe: number; sessionLoad: number; notes: string | null;
+}): TrainingSession {
+  return {
+    id: row.id,
+    playerId: row.playerId,
+    date: row.date,
+    type: row.type as TrainingSession["type"],
+    durationMinutes: row.durationMinutes,
+    rpe: row.rpe,
+    sessionLoad: row.sessionLoad,
+    notes: row.notes ?? undefined,
+  };
+}
 
 // ── Player ──
 
-export function getAllPlayers(): Player[] {
-  return _players;
+export async function getAllPlayers(): Promise<Player[]> {
+  const rows = await prisma.player.findMany({ orderBy: { name: "asc" } });
+  return rows.map(mapPlayer);
 }
 
-export function getPlayerById(id: string): Player | undefined {
-  return _players.find((p) => p.id === id);
+export async function getPlayerById(id: string): Promise<Player | undefined> {
+  const row = await prisma.player.findUnique({ where: { id } });
+  return row ? mapPlayer(row) : undefined;
 }
 
 // ── Wellness ──
 
-export function getWellnessForPlayer(playerId: string): WellnessEntry[] {
-  return _wellness
-    .filter((e) => e.playerId === playerId)
-    .sort((a, b) => b.date.localeCompare(a.date));
+const WELLNESS_INCLUDE = { bodyMapSelections: true } as const;
+
+export async function getWellnessForPlayer(playerId: string): Promise<WellnessEntry[]> {
+  const rows = await prisma.wellnessEntry.findMany({
+    where: { playerId },
+    include: WELLNESS_INCLUDE,
+    orderBy: { date: "desc" },
+  });
+  return rows.map(mapWellnessEntry);
 }
 
-export function getLatestWellness(playerId: string): WellnessEntry | undefined {
-  return getWellnessForPlayer(playerId)[0];
+export async function getLatestWellness(playerId: string): Promise<WellnessEntry | undefined> {
+  const row = await prisma.wellnessEntry.findFirst({
+    where: { playerId },
+    include: WELLNESS_INCLUDE,
+    orderBy: { date: "desc" },
+  });
+  return row ? mapWellnessEntry(row) : undefined;
 }
 
-export function getAllLatestWellness(): (WellnessEntry & { player: Player })[] {
-  return _players.map((player) => {
-    const latest = getLatestWellness(player.id);
-    return latest ? { ...latest, player } : null;
-  }).filter(Boolean) as (WellnessEntry & { player: Player })[];
+export async function getAllLatestWellness(): Promise<(WellnessEntry & { player: Player })[]> {
+  const players = await getAllPlayers();
+  const result: (WellnessEntry & { player: Player })[] = [];
+  for (const player of players) {
+    const latest = await getLatestWellness(player.id);
+    if (latest) result.push({ ...latest, player });
+  }
+  return result;
 }
 
 // ── Training Sessions ──
 
-export function getAllSessions(): (TrainingSession & { playerName: string })[] {
-  return _sessions
-    .map((s) => {
-      const p = _players.find((pl) => pl.id === s.playerId);
-      return p ? { ...s, playerName: p.name } : null;
-    })
-    .filter(Boolean)
-    .sort((a, b) => b!.date.localeCompare(a!.date) || a!.playerName.localeCompare(b!.playerName)) as (TrainingSession & { playerName: string })[];
+export async function getAllSessions(): Promise<(TrainingSession & { playerName: string })[]> {
+  const rows = await prisma.trainingSession.findMany({
+    include: { player: true },
+    orderBy: [{ date: "desc" }, { player: { name: "asc" } }],
+  });
+  return rows.map((r) => ({ ...mapSession(r), playerName: r.player.name }));
 }
 
-export function getSessionsForPlayer(playerId: string): TrainingSession[] {
-  return _sessions
-    .filter((s) => s.playerId === playerId)
-    .sort((a, b) => b.date.localeCompare(a.date));
+export async function getSessionsForPlayer(playerId: string): Promise<TrainingSession[]> {
+  const rows = await prisma.trainingSession.findMany({
+    where: { playerId },
+    orderBy: { date: "desc" },
+  });
+  return rows.map(mapSession);
 }
 
-// ── Risk Snapshots (computed, not persisted) ──
+// ── Risk Snapshots (computed from persisted source data, not stored) ──
 
 const RISK_ORDER: Record<RiskLevel, number> = { critical: 0, high: 1, moderate: 2, low: 3 };
 
-export function getRiskSnapshot(playerId: string, asOf: string = MOCK_AS_OF): PlayerRiskSnapshot {
-  return calculatePlayerRiskSnapshot(playerId, _sessions, _wellness, asOf);
+export async function getRiskSnapshot(playerId: string, asOf: string = MOCK_AS_OF): Promise<PlayerRiskSnapshot> {
+  const sessions = await getSessionsForPlayer(playerId);
+  const entries = await getWellnessForPlayer(playerId);
+  return calculatePlayerRiskSnapshot(playerId, sessions, entries, asOf);
 }
 
-export function getAllRiskSnapshots(
+export async function getAllRiskSnapshots(
   asOf: string = MOCK_AS_OF,
-): (PlayerRiskSnapshot & { player: Player })[] {
-  return _players.map((p) => ({
-    ...calculatePlayerRiskSnapshot(p.id, _sessions, _wellness, asOf),
+): Promise<(PlayerRiskSnapshot & { player: Player })[]> {
+  const players = await getAllPlayers();
+  // Batch-load all data for efficiency
+  const allSessions = await prisma.trainingSession.findMany();
+  const allEntries = await prisma.wellnessEntry.findMany({ include: WELLNESS_INCLUDE });
+  const sessionsMapped = allSessions.map(mapSession);
+  const entriesMapped = allEntries.map(mapWellnessEntry);
+
+  return players.map((p) => ({
+    ...calculatePlayerRiskSnapshot(
+      p.id,
+      sessionsMapped.filter((s) => s.playerId === p.id),
+      entriesMapped.filter((e) => e.playerId === p.id),
+      asOf,
+    ),
     player: p,
   }));
 }
 
-/** All risk snapshots sorted by risk priority, flag count, wellness, name. */
-export function getAllRiskSnapshotsSorted(
+export async function getAllRiskSnapshotsSorted(
   asOf: string = MOCK_AS_OF,
-): (PlayerRiskSnapshot & { player: Player })[] {
-  return getAllRiskSnapshots(asOf).sort((a, b) =>
+): Promise<(PlayerRiskSnapshot & { player: Player })[]> {
+  const snapshots = await getAllRiskSnapshots(asOf);
+  return snapshots.sort((a, b) =>
     (RISK_ORDER[a.riskLevel] - RISK_ORDER[b.riskLevel])
     || (b.sorenessFlags.length - a.sorenessFlags.length)
     || ((a.latestWellnessScore ?? 99) - (b.latestWellnessScore ?? 99))
@@ -122,79 +197,73 @@ export function getAllRiskSnapshotsSorted(
 
 // ── Writes ──
 
-let _nextWellnessId = _wellness.length + 1;
-let _nextSessionId = _sessions.length + 1;
-
-/**
- * Submit a wellness check-in. Validates input, enforces one-entry-per-day,
- * computes overallScore, resolves body map labels, and stores the entry.
- * Rejects if an entry already exists for the same player + date.
- */
-export function submitWellnessCheckIn(
+export async function submitWellnessCheckIn(
   input: unknown,
-): ValidationResult<WellnessEntry> {
+): Promise<ValidationResult<WellnessEntry>> {
   const result = validateWellnessCheckIn(input);
   if (!result.ok) return result;
 
   const d = result.data;
 
   // Business rule: one wellness entry per player per day
-  const existing = _wellness.find(
-    (e) => e.playerId === d.playerId && e.date === d.date,
-  );
+  const existing = await prisma.wellnessEntry.findUnique({
+    where: { playerId_date: { playerId: d.playerId, date: d.date } },
+  });
   if (existing) {
     return {
       ok: false,
-      errors: [{
-        field: "date",
-        message: `A check-in already exists for this player on ${d.date}`,
-      }],
+      errors: [{ field: "date", message: `A check-in already exists for this player on ${d.date}` }],
     };
   }
 
-  const entry: WellnessEntry = {
-    id: `w${_nextWellnessId++}`,
-    playerId: d.playerId,
-    date: d.date,
-    fatigue: d.fatigue,
-    soreness: d.soreness,
-    sleepQuality: d.sleepQuality,
-    recovery: d.recovery,
-    stress: d.stress,
-    mood: d.mood,
-    overallScore: d.overallScore,
-    notes: d.notes,
-    bodyMap: d.bodyMap,
-  };
+  const row = await prisma.wellnessEntry.create({
+    data: {
+      playerId: d.playerId,
+      date: d.date,
+      fatigue: d.fatigue,
+      soreness: d.soreness,
+      sleepQuality: d.sleepQuality,
+      recovery: d.recovery,
+      stress: d.stress,
+      mood: d.mood,
+      overallScore: d.overallScore,
+      notes: d.notes ?? null,
+      bodyMapSelections: {
+        create: d.bodyMap.map((bm) => ({
+          regionKey: bm.regionKey,
+          label: bm.label,
+          view: bm.view,
+          side: bm.side,
+          severity: bm.severity,
+        })),
+      },
+    },
+    include: WELLNESS_INCLUDE,
+  });
 
-  _wellness.push(entry);
-  return { ok: true, data: entry };
+  return { ok: true, data: mapWellnessEntry(row) };
 }
 
-/**
- * Log a training session. Validates input and derives sessionLoad server-side.
- * Returns the created session or validation errors.
- */
-export function submitTrainingSession(
+export async function submitTrainingSession(
   input: unknown,
-): ValidationResult<TrainingSession> {
+): Promise<ValidationResult<TrainingSession>> {
   const result = validateTrainingSession(input);
   if (!result.ok) return result;
 
   const d = result.data;
-  const session: TrainingSession = {
-    id: `ts${_nextSessionId++}`,
-    playerId: d.playerId,
-    date: d.date,
-    type: d.type,
-    durationMinutes: d.durationMinutes,
-    rpe: d.rpe,
-    sessionLoad: d.sessionLoad,
-    notes: d.notes,
-  };
+  const row = await prisma.trainingSession.create({
+    data: {
+      playerId: d.playerId,
+      date: d.date,
+      type: d.type,
+      durationMinutes: d.durationMinutes,
+      rpe: d.rpe,
+      sessionLoad: d.sessionLoad,
+      notes: d.notes ?? null,
+    },
+  });
 
-  _sessions.push(session);
-  return { ok: true, data: session };
+  return { ok: true, data: mapSession(row) };
 }
 
 // Re-export validation types for API routes

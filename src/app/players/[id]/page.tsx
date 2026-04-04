@@ -27,14 +27,14 @@ export default async function PlayerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const player = getPlayerById(id);
+  const player = await getPlayerById(id);
 
   if (!player) notFound();
 
-  const entries = getWellnessForPlayer(player.id);
-  const latest = getLatestWellness(player.id);
+  const entries = await getWellnessForPlayer(player.id);
+  const latest = await getLatestWellness(player.id);
   const latestBodyMap = latest?.bodyMap ?? [];
-  const snap = getRiskSnapshot(player.id);
+  const snap = await getRiskSnapshot(player.id);
 
   return (
     <AppShell title={player.name}>

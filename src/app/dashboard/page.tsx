@@ -10,8 +10,10 @@ import StatCard from "@/components/stat-card";
 import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
 import { getAllRiskSnapshotsSorted, MOCK_AS_OF } from "@/lib/data/service";
 
-export default function DashboardPage() {
-  const sorted = getAllRiskSnapshotsSorted();
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const sorted = await getAllRiskSnapshotsSorted();
 
   const totalPlayers = sorted.length;
   const unavailable = sorted.filter((s) => s.player.status !== "available").length;
