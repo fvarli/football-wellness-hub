@@ -16,6 +16,9 @@ football-wellness-hub/
       wellness/page.tsx        Squad wellness overview
       workload/page.tsx        Training session list + workload summary
       check-in/page.tsx        Player daily check-in
+      api/
+        wellness/check-in/route.ts   POST — submit wellness check-in
+        sessions/route.ts            POST — log training session
     components/
       app-shell.tsx            Layout wrapper (sidebar + header + content)
       sidebar.tsx              Navigation with role-aware sections
@@ -32,8 +35,9 @@ football-wellness-hub/
     lib/
       types.ts                 Shared TypeScript types (Player, WellnessEntry, BodyMapSelection, TrainingSession, PlayerRiskSnapshot)
       body-regions.ts          Canonical muscle region registry + view mapping
+      validation.ts            Input validation for write operations (pure, no side effects)
       data/
-        service.ts             Data access service — single import point for all page data reads
+        service.ts             Data access service — reads + writes, single import point for pages and API routes
       mock-data.ts             Static seed arrays (not imported by pages directly)
       risk.ts                  Pure computation: ACWR, wellness trend, soreness flags, risk level
     test/
@@ -44,6 +48,8 @@ football-wellness-hub/
       training-sessions.test.ts  Training session data tests (8 cases)
       risk.test.ts             Risk computation unit tests (30 cases)
       risk-badge.test.tsx      Risk badge component tests (9 cases)
+      validation.test.ts       Input validation tests (18 cases)
+      service-writes.test.ts   Write service integration tests (4 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config

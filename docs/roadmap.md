@@ -74,17 +74,28 @@
 - Database schema with indexes, audit fields, Prisma preview
 - Migration path from mock arrays → Prisma queries documented
 
+### Milestone 10 — Write Contracts, Validation, and API Routes
+- Input validation module (`src/lib/validation.ts`) with pure validator functions
+- Wellness check-in contract: 6 metrics validated 1-10, optional bodyMap validated against canonical region registry, duplicate regionKey rejection, overallScore derived server-side, labels resolved from registry
+- Training session contract: type/duration/rpe validated, sessionLoad derived server-side (rpe × duration)
+- Write methods in data service (`submitWellnessCheckIn`, `submitTrainingSession`) — validate then mutate in-memory arrays
+- API route skeletons: `POST /api/wellness/check-in`, `POST /api/sessions` — delegate to service, return 201/400
+- 22 new tests: 18 validation + 4 service write integration
+- All validation returns `{ ok, data }` or `{ ok: false, errors }` discriminated union
+
 ## Current Stable Baseline
 
-The application is a **complete frontend prototype** with:
+The application is a **complete frontend prototype with backend-ready write contracts**:
 - All major UI screens built and navigable
 - Wellness check-in form with structured body soreness input
 - Workload session list with computed load metrics
 - Risk computation layer with ACWR, wellness trend, soreness flags, and composite risk level
 - Risk data displayed on dashboard, player list, and player detail pages
-- Data access service layer decoupling pages from raw mock data
+- Data access service layer with validated reads and writes
+- API route skeletons for wellness check-in and training session creation
+- Input validation with regionKey verification against canonical body-regions registry
 - Polished responsive design
-- 75 tests across 5 test files
+- 97 tests across 7 test files
 - Mock data for 8 players with realistic wellness entries and training sessions
 
 All code builds, lints, and tests cleanly.

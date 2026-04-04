@@ -55,16 +55,54 @@ All functions are currently synchronous. When backed by a database, they become 
 |---|---|---|
 | `MOCK_AS_OF` | `"2026-04-04"` | Reference date for mock data. Will become `new Date()` with real backend. |
 
-## Page → Service Mapping
+## Write Methods
 
-| Page | Service functions used |
+| Function | Signature | Notes |
+|---|---|---|
+| `submitWellnessCheckIn(input)` | `(input: unknown) => ValidationResult<WellnessEntry>` | Validates, derives overallScore, resolves bodyMap labels from registry, stores entry |
+| `submitTrainingSession(input)` | `(input: unknown) => ValidationResult<TrainingSession>` | Validates, derives sessionLoad (rpe × duration), stores session |
+
+Write methods accept `unknown` and validate internally. On success they return `{ ok: true, data }`. On failure, `{ ok: false, errors: string[] }`.
+
+### Validation rules
+
+**Wellness check-in:**
+- playerId: non-empty string
+- date: YYYY-MM-DD format
+- 6 metrics (fatigue, soreness, sleepQuality, recovery, stress, mood): integer 1-10
+- bodyMap: optional array; each item must have valid regionKey (checked against `MUSCLE_REGIONS`), severity 1-10, no duplicate regionKey
+- overallScore: derived as mean of 6 metrics
+- bodyMap labels: resolved from the region registry, not trusted from client input
+
+**Training session:**
+- playerId: non-empty string
+- date: YYYY-MM-DD format
+- type: one of training, match, gym, recovery
+- durationMinutes: integer 1-600
+- rpe: integer 1-10
+- sessionLoad: derived server-side as rpe × durationMinutes (never accepted from client)
+
+## API Routes
+
+| Route | Method | Service function |
+|---|---|---|
+| `/api/wellness/check-in` | POST | `submitWellnessCheckIn` |
+| `/api/sessions` | POST | `submitTrainingSession` |
+
+Both return 201 + entity on success, 400 + `{ errors }` on validation failure.
+
+## Page / Route → Service Mapping
+
+| Consumer | Service functions used |
 |---|---|
 | `/dashboard` | `getAllRiskSnapshotsSorted`, `MOCK_AS_OF` |
 | `/players` | `getAllPlayers`, `getLatestWellness`, `getAllRiskSnapshots` |
 | `/players/[id]` | `getPlayerById`, `getWellnessForPlayer`, `getLatestWellness`, `getRiskSnapshot` |
 | `/wellness` | `getAllLatestWellness` |
 | `/workload` | `getAllSessions` |
-| `/check-in` | None (form-only, writes to local state) |
+| `/check-in` | None yet (form-only, writes to local state; will call API route when wired) |
+| `/api/wellness/check-in` | `submitWellnessCheckIn` |
+| `/api/sessions` | `submitTrainingSession` |
 
 ## Migration to Async
 
@@ -86,7 +124,7 @@ This normalization enables SQL-level queries on `region_key` for analytics, recu
 
 ## Service Design Notes
 
-- **Read-only for now.** Write operations (check-in submission, session creation) are deferred until backend API routes are implemented.
+- **Reads + writes.** Write operations validate input, derive computed fields, and mutate in-memory arrays. API routes delegate to the same service functions.
 - **Thin by design.** The service is a single file of concrete functions, not an abstract interface hierarchy. This is appropriate for the current prototype phase.
 - **If the service grows,** split by domain into separate modules: `data/players.ts`, `data/wellness.ts`, `data/sessions.ts`, `data/risk.ts`. Keep the current `service.ts` as a barrel re-export so page imports don't change.
 

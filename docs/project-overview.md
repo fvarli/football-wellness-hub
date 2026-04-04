@@ -39,7 +39,7 @@ Navigation groups: **Staff** (dashboard, players, wellness, workload, injury ris
 
 ## Current Maturity
 
-**Frontend prototype with mock data.** The UI is functional and polished. All data is client-side. There is no backend, no database, no authentication. The architecture is designed so that backend integration can replace mock data without restructuring components.
+**Frontend prototype with backend-ready write contracts.** The UI is functional and polished. All data is client-side (in-memory arrays). There is no database or authentication yet. API route skeletons exist for wellness check-in and training session submission with full input validation. The architecture is designed so that replacing mock arrays with database queries requires changes only in `src/lib/data/service.ts`.
 
 ### Tech Stack
 
