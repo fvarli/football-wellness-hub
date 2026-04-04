@@ -31,6 +31,7 @@ Replace spreadsheet-based wellness tracking with a purpose-built tool that:
 | Player list | `/players` | 8 demo players with search, status badges, latest wellness scores |
 | Player detail | `/players/[id]` | Profile header, latest check-in breakdown, body soreness summary, wellness history table |
 | Wellness overview | `/wellness` | Squad-wide color-coded wellness table |
+| Workload | `/workload` | Training session list with summary cards (total sessions, avg load, highest load) |
 | Daily check-in | `/check-in` | 6-metric wellness form + anatomical body soreness map |
 | Settings | `/settings` | Placeholder |
 

@@ -1,4 +1,4 @@
-import type { Player, WellnessEntry, BodyMapSelection } from "./types";
+import type { Player, WellnessEntry, BodyMapSelection, TrainingSession } from "./types";
 
 export const players: Player[] = [
   { id: "1", name: "Emre Yılmaz", position: "GK", number: 1, age: 28, status: "available" },
@@ -54,6 +54,55 @@ export const wellnessEntries: WellnessEntry[] = [
   { id: "w15", playerId: "8", date: "2026-04-04", fatigue: 7, soreness: 7, sleepQuality: 8, recovery: 7, stress: 8, mood: 8, overallScore: avg(7, 7, 8, 7, 8, 8), bodyMap: [] },
   { id: "w16", playerId: "8", date: "2026-04-03", fatigue: 8, soreness: 8, sleepQuality: 9, recovery: 8, stress: 7, mood: 9, overallScore: avg(8, 8, 9, 8, 7, 9), bodyMap: [] },
 ];
+
+// ── Training Sessions ──
+
+function load(rpe: number, dur: number): number { return rpe * dur; }
+
+export const trainingSessions: TrainingSession[] = [
+  // 2026-04-04 — match day
+  { id: "ts1",  playerId: "1", date: "2026-04-04", type: "match",    durationMinutes: 90, rpe: 8, sessionLoad: load(8, 90) },
+  { id: "ts2",  playerId: "2", date: "2026-04-04", type: "match",    durationMinutes: 90, rpe: 7, sessionLoad: load(7, 90) },
+  { id: "ts3",  playerId: "4", date: "2026-04-04", type: "match",    durationMinutes: 90, rpe: 7, sessionLoad: load(7, 90) },
+  { id: "ts4",  playerId: "5", date: "2026-04-04", type: "match",    durationMinutes: 90, rpe: 6, sessionLoad: load(6, 90) },
+  { id: "ts5",  playerId: "6", date: "2026-04-04", type: "match",    durationMinutes: 78, rpe: 8, sessionLoad: load(8, 78) },
+  { id: "ts6",  playerId: "8", date: "2026-04-04", type: "match",    durationMinutes: 90, rpe: 7, sessionLoad: load(7, 90) },
+  // 2026-04-04 — recovery / rest day for injured & resting
+  { id: "ts7",  playerId: "3", date: "2026-04-04", type: "recovery", durationMinutes: 30, rpe: 2, sessionLoad: load(2, 30) },
+  { id: "ts8",  playerId: "7", date: "2026-04-04", type: "recovery", durationMinutes: 25, rpe: 3, sessionLoad: load(3, 25) },
+  // 2026-04-03 — training day
+  { id: "ts9",  playerId: "1", date: "2026-04-03", type: "training", durationMinutes: 75, rpe: 6, sessionLoad: load(6, 75) },
+  { id: "ts10", playerId: "2", date: "2026-04-03", type: "training", durationMinutes: 75, rpe: 5, sessionLoad: load(5, 75) },
+  { id: "ts11", playerId: "4", date: "2026-04-03", type: "training", durationMinutes: 75, rpe: 5, sessionLoad: load(5, 75) },
+  { id: "ts12", playerId: "5", date: "2026-04-03", type: "training", durationMinutes: 75, rpe: 6, sessionLoad: load(6, 75) },
+  { id: "ts13", playerId: "6", date: "2026-04-03", type: "training", durationMinutes: 75, rpe: 7, sessionLoad: load(7, 75) },
+  { id: "ts14", playerId: "7", date: "2026-04-03", type: "gym",      durationMinutes: 45, rpe: 4, sessionLoad: load(4, 45) },
+  { id: "ts15", playerId: "8", date: "2026-04-03", type: "training", durationMinutes: 75, rpe: 5, sessionLoad: load(5, 75) },
+  // 2026-04-02 — training day
+  { id: "ts16", playerId: "1", date: "2026-04-02", type: "training", durationMinutes: 80, rpe: 7, sessionLoad: load(7, 80) },
+  { id: "ts17", playerId: "2", date: "2026-04-02", type: "training", durationMinutes: 80, rpe: 6, sessionLoad: load(6, 80) },
+  { id: "ts18", playerId: "3", date: "2026-04-02", type: "recovery", durationMinutes: 30, rpe: 2, sessionLoad: load(2, 30) },
+  { id: "ts19", playerId: "4", date: "2026-04-02", type: "training", durationMinutes: 80, rpe: 6, sessionLoad: load(6, 80) },
+  { id: "ts20", playerId: "5", date: "2026-04-02", type: "training", durationMinutes: 80, rpe: 5, sessionLoad: load(5, 80) },
+  { id: "ts21", playerId: "6", date: "2026-04-02", type: "training", durationMinutes: 80, rpe: 6, sessionLoad: load(6, 80) },
+  { id: "ts22", playerId: "8", date: "2026-04-02", type: "training", durationMinutes: 80, rpe: 6, sessionLoad: load(6, 80) },
+];
+
+export function getAllSessions(): (TrainingSession & { playerName: string })[] {
+  return trainingSessions
+    .map((s) => {
+      const p = players.find((pl) => pl.id === s.playerId);
+      return p ? { ...s, playerName: p.name } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => b!.date.localeCompare(a!.date) || a!.playerName.localeCompare(b!.playerName)) as (TrainingSession & { playerName: string })[];
+}
+
+export function getPlayerSessions(playerId: string): TrainingSession[] {
+  return trainingSessions
+    .filter((s) => s.playerId === playerId)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
 
 /** @deprecated Use entry.bodyMap directly. Kept for backward compatibility during migration. */
 export function getBodyMapForEntry(entryId: string): BodyMapSelection[] {

@@ -14,6 +14,7 @@ football-wellness-hub/
       players/page.tsx         Player list
       players/[id]/page.tsx    Player detail (server component, async params)
       wellness/page.tsx        Squad wellness overview
+      workload/page.tsx        Training session list + workload summary
       check-in/page.tsx        Player daily check-in
     components/
       app-shell.tsx            Layout wrapper (sidebar + header + content)
@@ -36,6 +37,7 @@ football-wellness-hub/
       vitest.d.ts              Type declarations for Vitest globals + jest-dom
       body-regions.test.ts     Data model tests (16 cases)
       body-map.test.tsx        Component interaction tests (12 cases)
+      training-sessions.test.ts  Training session data tests (8 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config

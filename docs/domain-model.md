@@ -239,11 +239,9 @@ The `regionKey` is the bridge between athlete-reported soreness and derived risk
 
 `bodyMap: BodyMapSelection[]` is embedded in `WellnessEntry`. The separate `bodyMapEntries` side-table has been removed. Player detail page reads `entry.bodyMap` directly.
 
-### Phase 2 — Add Training Session UI + Mock Data
+### Phase 2 — Add Training Session UI + Mock Data ✅
 
-Types (`TrainingSession`, `SessionType`) are defined. Next: add mock session data and create a session logging UI at `/workload`.
-
-**Files:** `mock-data.ts`, new page component
+22 mock training sessions across 3 days for 8 players. `/workload` page shows session list with summary cards. `getAllSessions()` and `getPlayerSessions()` helpers provide sorted, enriched data access.
 
 ### Phase 3 — Add Risk Snapshot Computation
 

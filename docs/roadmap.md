@@ -40,24 +40,40 @@
 - Source-of-truth vs derived field classification documented
 - Phased implementation plan from frontend mock to backend persistence
 
+### Milestone 6 — Workload Foundation
+- Mock training session data for 8 players across 3 days (22 sessions: match, training, gym, recovery)
+- `/workload` page with summary stat cards (total sessions, avg load, highest load)
+- Session table: player name, date, type badge, duration, RPE, session load (AU)
+- RPE color-coded (green/amber/red), load color-coded by intensity
+- `getAllSessions()` and `getPlayerSessions()` data helpers
+- Test suite for training session data integrity (8 cases)
+
 ## Current Stable Baseline
 
 The application is a **complete frontend prototype** with:
 - All major UI screens built and navigable
 - Wellness check-in form with structured body soreness input
+- Workload session list with computed load metrics
 - Polished responsive design
-- Test coverage for product-critical body map behavior
-- Mock data for 8 players with realistic wellness entries
+- Test coverage for body map behavior and training session data (36 tests)
+- Mock data for 8 players with realistic wellness entries and training sessions
 
 All code builds, lints, and tests cleanly.
 
 ## Next Likely Milestones
 
+### ACWR and Injury Risk
+- Acute:Chronic Workload Ratio calculation per player (7-day acute / 28-day chronic)
+- Per-muscle-group risk scoring using body map `regionKey` as join key
+- Risk thresholds and alert rules
+- Dashboard integration for at-risk player identification
+- Requires: pure computation module in `src/lib/risk.ts`
+
 ### Backend Persistence
-- API routes or external backend for wellness entries
-- Database for players, entries, body map selections
+- API routes or external backend for wellness entries and training sessions
+- Database for players, entries, body map selections, sessions
 - Replace mock data with real API calls
-- `BodyMapSelection` and `WellnessEntry` types are already designed for serialization
+- All TypeScript interfaces are already designed for serialization
 
 ### Authentication and RBAC
 - Login flow (likely OAuth or credential-based)
@@ -65,12 +81,6 @@ All code builds, lints, and tests cleanly.
 - Route protection via middleware or layout-level guards
 - Sidebar section visibility based on role
 - Route groups `(staff)/`, `(player)/` if needed
-
-### Workload Tracking (RPE + Session Data)
-- Training session logging
-- RPE (Rate of Perceived Exertion) per session
-- Session load = RPE x duration
-- Weekly/daily load aggregation
 
 ### ACWR and Injury Risk
 - Acute:Chronic Workload Ratio calculation per player
