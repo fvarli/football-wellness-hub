@@ -50,6 +50,7 @@ football-wellness-hub/
       risk-badge.test.tsx      Risk badge component tests (9 cases)
       validation.test.ts       Input validation tests (18 cases)
       service-writes.test.ts   Write service integration tests (4 cases)
+      wellness-form.test.tsx   Wellness form submit flow tests (5 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config

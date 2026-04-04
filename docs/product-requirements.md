@@ -22,7 +22,7 @@
 3. Optionally expands the Body Soreness Map section.
 4. Taps muscle regions on the anatomical SVG to focus them, then picks a severity (1-10, higher = worse).
 5. Adds optional free-text notes.
-6. Submits. A success confirmation appears with the count of marked body areas.
+6. Submits via `POST /api/wellness/check-in`. A loading spinner shows during the request. On success, a confirmation appears with the count of marked body areas. On validation failure, error messages appear above the form and all entered values are preserved.
 
 ### Why Severity Is Not Auto-Assigned
 

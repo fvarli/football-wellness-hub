@@ -83,19 +83,27 @@
 - 22 new tests: 18 validation + 4 service write integration
 - All validation returns `{ ok, data }` or `{ ok: false, errors }` discriminated union
 
+### Milestone 11 — Check-in Form Wired to API
+- Wellness form submits via `fetch POST /api/wellness/check-in` instead of local-only state
+- Loading spinner on submit button during request
+- Validation errors from API displayed as an error summary above the form; entered values preserved
+- Success screen shows body area count from the API response
+- "Submit Another" resets form completely
+- Demo `playerId` hardcoded until auth exists
+- 5 new tests: successful submit, API error display, network error, success reset, loading state
+
 ## Current Stable Baseline
 
-The application is a **complete frontend prototype with backend-ready write contracts**:
+The application is a **complete frontend prototype with a working API-backed check-in flow**:
 - All major UI screens built and navigable
-- Wellness check-in form with structured body soreness input
+- Wellness check-in form submits to `POST /api/wellness/check-in` with full validation
 - Workload session list with computed load metrics
 - Risk computation layer with ACWR, wellness trend, soreness flags, and composite risk level
 - Risk data displayed on dashboard, player list, and player detail pages
 - Data access service layer with validated reads and writes
-- API route skeletons for wellness check-in and training session creation
 - Input validation with regionKey verification against canonical body-regions registry
 - Polished responsive design
-- 97 tests across 7 test files
+- 102 tests across 8 test files
 - Mock data for 8 players with realistic wellness entries and training sessions
 
 All code builds, lints, and tests cleanly.

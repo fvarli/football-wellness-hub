@@ -2,6 +2,10 @@ import AppShell from "@/components/app-shell";
 import WellnessForm from "@/components/wellness-form";
 import { ClipboardCheck } from "lucide-react";
 
+// Hardcoded demo player until auth is implemented.
+// In production, playerId comes from the authenticated session.
+const DEMO_PLAYER_ID = "1";
+
 export default function CheckInPage() {
   return (
     <AppShell title="Daily Check-in">
@@ -19,7 +23,7 @@ export default function CheckInPage() {
         </div>
 
         <div className="rounded-xl border border-card-border bg-card-bg p-5">
-          <WellnessForm />
+          <WellnessForm playerId={DEMO_PLAYER_ID} />
         </div>
       </div>
     </AppShell>

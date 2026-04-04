@@ -100,7 +100,7 @@ Both return 201 + entity on success, 400 + `{ errors }` on validation failure.
 | `/players/[id]` | `getPlayerById`, `getWellnessForPlayer`, `getLatestWellness`, `getRiskSnapshot` |
 | `/wellness` | `getAllLatestWellness` |
 | `/workload` | `getAllSessions` |
-| `/check-in` | None yet (form-only, writes to local state; will call API route when wired) |
+| `/check-in` | Posts to `/api/wellness/check-in` via fetch |
 | `/api/wellness/check-in` | `submitWellnessCheckIn` |
 | `/api/sessions` | `submitTrainingSession` |
 
