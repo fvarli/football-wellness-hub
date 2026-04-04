@@ -40,7 +40,7 @@ Navigation groups: **Staff** (dashboard, players, wellness, workload, injury ris
 
 ## Current Maturity
 
-**Frontend prototype with backend-ready write contracts.** The UI is functional and polished. All data is client-side (in-memory arrays). There is no database or authentication yet. API route skeletons exist for wellness check-in and training session submission with full input validation. The architecture is designed so that replacing mock arrays with database queries requires changes only in `src/lib/data/service.ts`.
+**Full-stack prototype with PostgreSQL persistence.** The UI is functional and polished. Data is stored in PostgreSQL via Prisma 7. API routes handle wellness check-in and training session creation with full server-side validation. There is no authentication yet — a demo playerId is used for writes.
 
 ### Tech Stack
 
@@ -50,5 +50,6 @@ Navigation groups: **Staff** (dashboard, players, wellness, workload, injury ris
 | Language | TypeScript 5 |
 | UI | React 19, Tailwind CSS 4 |
 | Icons | Lucide React |
+| Database | PostgreSQL via Prisma 7, @prisma/adapter-pg |
 | Testing | Vitest 4, React Testing Library, jsdom |
 | Lint | ESLint 9 with next config |

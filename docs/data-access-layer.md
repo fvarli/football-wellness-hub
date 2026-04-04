@@ -5,19 +5,19 @@
 ```
 Pages / Components
       │
-      ▼
-src/lib/data/service.ts    ← single import point for all data reads
+      ▼ (await)
+src/lib/data/service.ts    ← single async import point for all data access
       │
       ▼
-src/lib/mock-data.ts       ← static arrays (current mock backend)
+src/lib/db.ts → Prisma → PostgreSQL
 src/lib/risk.ts            ← pure computation (risk snapshots)
 ```
 
-Pages never import `mock-data.ts` directly. They import from `@/lib/data/service`.
+Pages import from `@/lib/data/service` only. The service uses Prisma to query PostgreSQL. `mock-data.ts` is used only by the seed script.
 
 ## Service API
 
-All functions are currently synchronous. When backed by a database, they become `async`.
+All functions are `async` (Prisma-backed). Server components `await` them. Client components use API routes.
 
 ### Player
 
@@ -137,7 +137,11 @@ This normalization enables SQL-level queries on `region_key` for analytics, recu
 
 | File | Role |
 |---|---|
-| `src/lib/data/service.ts` | Public API — all data reads route through here |
-| `src/lib/mock-data.ts` | Private seed data — not imported by pages |
+| `src/lib/data/service.ts` | Public API — all async data reads and writes via Prisma |
+| `src/lib/db.ts` | Prisma client singleton with adapter-pg |
+| `src/lib/validation.ts` | Pure input validation — trust boundary for all writes |
 | `src/lib/risk.ts` | Pure computation — imported by service for snapshot building |
+| `src/lib/mock-data.ts` | Seed data only — used by `prisma/seed.ts`, not imported at runtime |
 | `src/lib/types.ts` | Shared interfaces — used by all layers |
+| `prisma/schema.prisma` | Database schema (4 tables) |
+| `prisma/seed.ts` | Seeds the database from mock-data arrays |

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import AppShell from "@/components/app-shell";
 import PlayersList from "@/components/players-list";
 import { getAllPlayers, getLatestWellness, getAllRiskSnapshots } from "@/lib/data/service";

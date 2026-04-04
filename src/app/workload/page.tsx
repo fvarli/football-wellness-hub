@@ -3,6 +3,8 @@ import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import StatCard from "@/components/stat-card";
 import { getAllSessions } from "@/lib/data/service";
+
+export const dynamic = "force-dynamic";
 import type { SessionType } from "@/lib/types";
 
 const typeStyles: Record<SessionType, string> = {

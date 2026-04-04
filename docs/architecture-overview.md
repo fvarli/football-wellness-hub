@@ -38,9 +38,10 @@ football-wellness-hub/
       types.ts                 Shared TypeScript types (Player, WellnessEntry, BodyMapSelection, TrainingSession, PlayerRiskSnapshot)
       body-regions.ts          Canonical muscle region registry + view mapping
       validation.ts            Input validation for write operations (pure, no side effects)
+      db.ts                    Prisma client singleton (PostgreSQL via @prisma/adapter-pg)
       data/
-        service.ts             Data access service — reads + writes, single import point for pages and API routes
-      mock-data.ts             Static seed arrays (not imported by pages directly)
+        service.ts             Async data access service — reads + writes via Prisma, single import point for pages and API routes
+      mock-data.ts             Seed data arrays (used by prisma/seed.ts, not imported by pages)
       risk.ts                  Pure computation: ACWR, wellness trend, soreness flags, risk level
     test/
       setup.ts                 Vitest setup (jest-dom matchers)
@@ -62,7 +63,7 @@ football-wellness-hub/
 
 ## Page Rendering Model
 
-- **Server components** (default): Dashboard, player detail, wellness overview. These read mock data at build/request time.
+- **Server components** (default): Dashboard, player detail, wellness overview, workload, players list. These read from PostgreSQL via Prisma at request time (`force-dynamic`).
 - **Client components** (`"use client"`): Sidebar, header, body map, wellness form, rating input. These manage interactive state.
 - **Dynamic routes**: `/players/[id]` uses Next.js 16 async `params` (`await params`).
 - **Redirect**: `/` redirects to `/dashboard` via `next/navigation`.
@@ -78,7 +79,7 @@ User interaction
           → CSS currentColor drives severity fill
 ```
 
-There is no global state management (no Redux, no Zustand, no Context). Each page manages its own data. Pages read from `src/lib/data/service.ts`, which wraps the mock data arrays. The check-in form owns wellness ratings, body map selections, and notes as local state, then submits them together.
+There is no global state management (no Redux, no Zustand, no Context). Each page manages its own data. Server components `await` async functions from `src/lib/data/service.ts`, which queries PostgreSQL via Prisma. Client components (`check-in`, `log session`) post to API routes. The `players-list.tsx` client component receives pre-fetched data from its server component wrapper.
 
 ### Body Map Data Flow
 
@@ -128,8 +129,7 @@ Both mobile and desktop SVG containers render simultaneously in jsdom (no CSS me
 
 | Constraint | Impact |
 |---|---|
-| No backend | All data is client-side mock. Form submissions update local state only. |
-| No database | No persistence across page reloads. |
+| PostgreSQL required | Data is persisted in PostgreSQL via Prisma. Requires `npm run db:migrate` + `npm run db:seed` for first run. |
 | No authentication | Routes are structurally role-aware (Staff / Player / System sections) but no access control. |
 | No real-time updates | No WebSocket or polling. Each page loads its own data. |
 | Male body map only | No female anatomical SVG. |

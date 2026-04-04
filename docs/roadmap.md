@@ -107,22 +107,32 @@
 - `SessionForm` component matches wellness form UX patterns (error summary, loading spinner, success screen)
 - 6 new component tests + 1 new service integration test (session readable after creation)
 
+### Milestone 14 — PostgreSQL Persistence via Prisma
+- Prisma 7 schema with 4 tables: Player, WellnessEntry, WellnessBodyMapSelection, TrainingSession
+- Body map stored as normalized child rows; assembled into bodyMap array on read by the service
+- `src/lib/db.ts` Prisma client singleton with `@prisma/adapter-pg`
+- All service functions converted to async Prisma queries
+- All server component pages updated to async/await with `force-dynamic`
+- Players list restructured: server component (data fetch) + client component (search UI)
+- Seed script (`prisma/seed.ts`) populates database from existing mock data
+- `mock-data.ts` remains as seed input only, not as runtime storage
+- Risk snapshots still computed on-the-fly (not persisted)
+- 111 tests across 9 test files (service-writes tests refactored to test validation layer directly)
+
 ## Current Stable Baseline
 
-The application is a **complete frontend prototype with API-backed write flows for both wellness and workload**:
+The application is a **full-stack prototype with PostgreSQL persistence**:
 - All major UI screens built and navigable
-- Wellness check-in form submits to `POST /api/wellness/check-in` with full validation
-- Training session form submits to `POST /api/sessions` with full validation
-- One check-in per player per day enforced; duplicates rejected
-- Structured error responses with optional field attribution
-- Workload session list with computed load metrics + session creation link
-- Risk computation layer with ACWR, wellness trend, soreness flags, and composite risk level
+- Data persisted in PostgreSQL via Prisma 7
+- Wellness check-in and training session creation via validated API routes
+- Body map selections stored as normalized child rows, assembled on read
+- One check-in per player per day enforced at the service layer
+- Risk computation (ACWR, wellness trend, soreness flags) computed from persisted data
 - Risk data displayed on dashboard, player list, and player detail pages
-- Data access service layer with validated reads and writes
 - Input validation with regionKey verification against canonical body-regions registry
 - Polished responsive design
-- 113 tests across 9 test files
-- Mock data for 8 players with realistic wellness entries and training sessions
+- 111 tests across 9 test files
+- Database seeded from mock data for 8 players
 
 All code builds, lints, and tests cleanly.
 
