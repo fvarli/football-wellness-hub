@@ -53,6 +53,41 @@ describe("wellness write contract", () => {
   });
 });
 
+describe("wellness update contract (validation layer)", () => {
+  it("update uses the same validation as create", () => {
+    // The update endpoint revalidates the full payload through validateWellnessCheckIn
+    const valid = validateWellnessCheckIn(validCheckin({ date: "2026-06-01" }));
+    expect(valid.ok).toBe(true);
+
+    // Invalid input is rejected the same way
+    const invalid = validateWellnessCheckIn(validCheckin({ fatigue: 0 }));
+    expect(invalid.ok).toBe(false);
+  });
+
+  it("body map replacement uses the same validation as create", () => {
+    const result = validateWellnessCheckIn(validCheckin({
+      bodyMap: [
+        { regionKey: "left_hamstring", severity: 7, view: "back", side: "left" },
+        { regionKey: "lower_back", severity: 5, view: "back", side: "center" },
+      ],
+    }));
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.bodyMap).toHaveLength(2);
+    }
+  });
+
+  it("rejects duplicate regionKey in update body map", () => {
+    const result = validateWellnessCheckIn(validCheckin({
+      bodyMap: [
+        { regionKey: "chest", severity: 5, view: "front", side: "center" },
+        { regionKey: "chest", severity: 3, view: "front", side: "center" },
+      ],
+    }));
+    expect(result.ok).toBe(false);
+  });
+});
+
 describe("training session write contract", () => {
   it("validates and derives sessionLoad", () => {
     const result = validateTrainingSession({

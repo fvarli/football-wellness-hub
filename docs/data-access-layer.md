@@ -59,14 +59,17 @@ All functions are `async` (Prisma-backed). Server components `await` them. Clien
 
 | Function | Signature | Notes |
 |---|---|---|
-| `submitWellnessCheckIn(input)` | `(input: unknown) => ValidationResult<WellnessEntry>` | Validates, rejects duplicate same-day submission, derives overallScore, resolves bodyMap labels from registry, stores entry |
-| `submitTrainingSession(input)` | `(input: unknown) => ValidationResult<TrainingSession>` | Validates, derives sessionLoad (rpe × duration), stores session |
+| `submitWellnessCheckIn(input)` | `(input) => Promise<VR<WellnessEntry>>` | POST: validates, rejects same-day duplicate, derives overallScore, resolves bodyMap labels, creates entry |
+| `updateWellnessCheckIn(entryId, input)` | `(id, input) => Promise<VR<WellnessEntry>>` | PUT: validates, finds entry, prevents cross-player edit, replaces body map child rows in transaction, updates all fields |
+| `submitTrainingSession(input)` | `(input) => Promise<VR<TrainingSession>>` | POST: validates, derives sessionLoad (rpe × duration), creates session |
 
 Write methods accept `unknown` and validate internally. On success they return `{ ok: true, data }`. On failure, `{ ok: false, errors: WriteError[] }` where each error has `{ field?: string; message: string }`.
 
 ### Business rules (enforced in service, not validation)
 
-- **One wellness entry per player per day.** A second submission for the same `playerId + date` is rejected with a `date` field error. The player must use a different date or an update endpoint (not yet implemented).
+- **One wellness entry per player per day.** A POST for the same `playerId + date` is rejected with a `date` field error. Use PUT with `entryId` to update an existing entry.
+- **Body map replacement on update.** PUT deletes all existing body map child rows and creates new ones in a single transaction. No partial merge.
+- **Cross-player edit prevention.** PUT rejects if the `playerId` in the payload differs from the existing entry's player.
 
 ### Validation rules
 
@@ -91,6 +94,7 @@ Write methods accept `unknown` and validate internally. On success they return `
 | Route | Method | Service function |
 |---|---|---|
 | `/api/wellness/check-in` | POST | `submitWellnessCheckIn` |
+| `/api/wellness/check-in` | PUT | `updateWellnessCheckIn` (requires `entryId` in body) |
 | `/api/sessions` | POST | `submitTrainingSession` |
 
 Both return 201 + entity on success, 400 + `{ errors }` on validation failure.

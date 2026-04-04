@@ -40,7 +40,7 @@ Navigation groups: **Staff** (dashboard, players, wellness, workload, injury ris
 
 ## Current Maturity
 
-**Full-stack prototype with PostgreSQL persistence.** The UI is functional and polished. Data is stored in PostgreSQL via Prisma 7. API routes handle wellness check-in and training session creation with full server-side validation. There is no authentication yet — a demo playerId is used for writes.
+**Full-stack prototype with PostgreSQL persistence.** The UI is functional and polished. Data is stored in PostgreSQL via Prisma 7. API routes handle wellness check-in creation (POST) and update (PUT), plus training session creation (POST), all with full server-side validation. There is no authentication yet — a demo playerId is used for writes.
 
 ### Tech Stack
 

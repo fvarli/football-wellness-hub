@@ -18,7 +18,7 @@ football-wellness-hub/
       workload/log/page.tsx    Training session creation form
       check-in/page.tsx        Player daily check-in
       api/
-        wellness/check-in/route.ts   POST — submit wellness check-in
+        wellness/check-in/route.ts   POST — create wellness check-in, PUT — update by entryId
         sessions/route.ts            POST — log training session
     components/
       app-shell.tsx            Layout wrapper (sidebar + header + content)
@@ -52,7 +52,10 @@ football-wellness-hub/
       risk.test.ts             Risk computation unit tests (30 cases)
       risk-badge.test.tsx      Risk badge component tests (9 cases)
       validation.test.ts       Input validation tests (18 cases)
-      service-writes.test.ts   Write service integration tests (4 cases)
+      service-writes.test.ts   Write contract unit tests (9 cases)
+      integration/
+        setup.ts               Integration test setup
+        wellness-writes.test.ts  Prisma-backed write integration tests (6 cases, requires DB)
       wellness-form.test.tsx   Wellness form submit flow tests (5 cases)
       session-form.test.tsx    Session form submit flow tests (6 cases)
   vitest.config.ts             Test runner config
