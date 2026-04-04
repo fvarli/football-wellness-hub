@@ -96,7 +96,9 @@ function SelectionList({
   onRemove: (key: string) => void;
   readOnly?: boolean;
 }) {
-  const sorted = [...selections].sort((a, b) => b.severity - a.severity);
+  const sorted = [...selections].sort((a, b) =>
+    b.severity - a.severity || a.label.localeCompare(b.label)
+  );
   return (
     <div className="space-y-1.5">
       {sorted.map((s) => (

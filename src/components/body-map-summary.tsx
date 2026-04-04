@@ -19,7 +19,9 @@ interface BodyMapSummaryProps {
 export default function BodyMapSummary({ selections }: BodyMapSummaryProps) {
   if (selections.length === 0) return null;
 
-  const sorted = [...selections].sort((a, b) => b.severity - a.severity);
+  const sorted = [...selections].sort((a, b) =>
+    b.severity - a.severity || a.label.localeCompare(b.label)
+  );
 
   return (
     <div className="space-y-2">
