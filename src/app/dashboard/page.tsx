@@ -8,24 +8,29 @@ import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import StatCard from "@/components/stat-card";
 import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
-import { players, wellnessEntries, trainingSessions } from "@/lib/mock-data";
-import { calculatePlayerRiskSnapshot } from "@/lib/risk";
+import { getAllRiskSnapshots, MOCK_AS_OF } from "@/lib/mock-data";
+import type { RiskLevel } from "@/lib/types";
 
-const AS_OF = "2026-04-04";
+const RISK_ORDER: Record<RiskLevel, number> = { critical: 0, high: 1, moderate: 2, low: 3 };
 
 export default function DashboardPage() {
-  const snapshots = players.map((p) =>
-    ({ ...calculatePlayerRiskSnapshot(p.id, trainingSessions, wellnessEntries, AS_OF), player: p }),
-  );
+  const snapshots = getAllRiskSnapshots();
 
-  const totalPlayers = players.length;
-  const unavailable = players.filter((p) => p.status !== "available").length;
+  const totalPlayers = snapshots.length;
+  const unavailable = snapshots.filter((s) => s.player.status !== "available").length;
   const atRisk = snapshots.filter((s) => s.riskLevel === "high" || s.riskLevel === "critical").length;
-  const avgWellness = snapshots.filter((s) => s.latestWellnessScore !== null).length > 0
-    ? (snapshots.reduce((sum, s) => sum + (s.latestWellnessScore ?? 0), 0) /
-       snapshots.filter((s) => s.latestWellnessScore !== null).length).toFixed(1)
+  const withWellness = snapshots.filter((s) => s.latestWellnessScore !== null);
+  const avgWellness = withWellness.length > 0
+    ? (withWellness.reduce((sum, s) => sum + s.latestWellnessScore!, 0) / withWellness.length).toFixed(1)
     : "—";
   const totalFlagged = snapshots.filter((s) => s.sorenessFlags.length > 0).length;
+
+  const sorted = [...snapshots].sort((a, b) =>
+    (RISK_ORDER[a.riskLevel] - RISK_ORDER[b.riskLevel])
+    || (b.sorenessFlags.length - a.sorenessFlags.length)
+    || ((a.latestWellnessScore ?? 99) - (b.latestWellnessScore ?? 99))
+    || a.player.name.localeCompare(b.player.name)
+  );
 
   return (
     <AppShell title="Dashboard">
@@ -34,7 +39,7 @@ export default function DashboardPage() {
           Good morning, Coach
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Squad overview as of {AS_OF}.
+          Squad overview as of {MOCK_AS_OF}.
         </p>
       </div>
 
@@ -91,34 +96,29 @@ export default function DashboardPage() {
             </tr>
           </thead>
           <tbody>
-            {snapshots
-              .sort((a, b) => {
-                const order: Record<string, number> = { critical: 0, high: 1, moderate: 2, low: 3 };
-                return (order[a.riskLevel] ?? 9) - (order[b.riskLevel] ?? 9);
-              })
-              .map((s) => (
-                <tr key={s.playerId} className="border-b border-card-border/50 last:border-0 hover:bg-gray-50/50">
-                  <td className="px-5 py-3">
-                    <Link href={`/players/${s.playerId}`} className="font-medium text-foreground hover:text-accent transition-colors">
-                      {s.player.name}
-                    </Link>
-                    <span className="ml-2 text-xs text-muted">{s.player.position}</span>
-                  </td>
-                  <td className="px-3 py-3 text-center"><RiskLevelBadge level={s.riskLevel} /></td>
-                  <td className="px-3 py-3 text-center"><AcwrValue acwr={s.acwr} /></td>
-                  <td className="px-3 py-3 text-center">
-                    {s.latestWellnessScore !== null
-                      ? <span className="text-sm font-semibold text-foreground">{s.latestWellnessScore.toFixed(1)}</span>
-                      : <span className="text-xs text-muted">—</span>}
-                  </td>
-                  <td className="px-3 py-3 text-center"><TrendBadge trend={s.wellnessTrend} /></td>
-                  <td className="px-3 py-3 text-center">
-                    {s.sorenessFlags.length > 0
-                      ? <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-orange-700">{s.sorenessFlags.length}</span>
-                      : <span className="text-xs text-muted">0</span>}
-                  </td>
-                </tr>
-              ))}
+            {sorted.map((s) => (
+              <tr key={s.playerId} className="border-b border-card-border/50 last:border-0 hover:bg-gray-50/50">
+                <td className="px-5 py-3">
+                  <Link href={`/players/${s.playerId}`} className="font-medium text-foreground hover:text-accent transition-colors">
+                    {s.player.name}
+                  </Link>
+                  <span className="ml-2 text-xs text-muted">{s.player.position}</span>
+                </td>
+                <td className="px-3 py-3 text-center"><RiskLevelBadge level={s.riskLevel} /></td>
+                <td className="px-3 py-3 text-center"><AcwrValue acwr={s.acwr} /></td>
+                <td className="px-3 py-3 text-center">
+                  {s.latestWellnessScore !== null
+                    ? <span className="text-sm font-semibold text-foreground">{s.latestWellnessScore.toFixed(1)}</span>
+                    : <span className="text-xs text-muted">—</span>}
+                </td>
+                <td className="px-3 py-3 text-center"><TrendBadge trend={s.wellnessTrend} /></td>
+                <td className="px-3 py-3 text-center">
+                  {s.sorenessFlags.length > 0
+                    ? <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-orange-700">{s.sorenessFlags.length}</span>
+                    : <span className="text-xs text-muted">0</span>}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

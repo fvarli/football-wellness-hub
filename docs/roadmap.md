@@ -78,7 +78,8 @@ The application is a **complete frontend prototype** with:
 - Mock data for 8 players with realistic wellness entries and training sessions
 
 All code builds, lints, and tests cleanly.
-- Requires: pure computation module in `src/lib/risk.ts`
+
+## Next Likely Milestones
 
 ### Backend Persistence
 - API routes or external backend for wellness entries and training sessions
@@ -91,13 +92,6 @@ All code builds, lints, and tests cleanly.
 - Role assignment: Admin, Coach, Player
 - Route protection via middleware or layout-level guards
 - Sidebar section visibility based on role
-- Route groups `(staff)/`, `(player)/` if needed
-
-### ACWR and Injury Risk
-- Acute:Chronic Workload Ratio calculation per player
-- Per-muscle-group risk scoring using body map `regionKey` as join key
-- Risk thresholds and alert rules
-- Dashboard integration for at-risk player identification
 
 ### Analytics and Trends
 - Wellness trend charts per player over time
@@ -105,21 +99,23 @@ All code builds, lints, and tests cleanly.
 - Squad-level trend visualization
 - Exportable reports
 
+### Advanced Risk Features
+- Per-muscle-group risk scoring (correlate ACWR with body map regionKey patterns)
+- Configurable risk thresholds and alert rules
+- Push notifications for critical risk changes
+
 ## Dependencies and Sequencing
 
 ```
 Backend Persistence
-  └── Authentication / RBAC
-        └── Workload Tracking
-              └── ACWR / Injury Risk
-                    └── Analytics / Trends
+  ├── Authentication / RBAC
+  └── Analytics / Trends
+        └── Advanced Risk Features
 ```
 
-Backend persistence is the critical-path blocker. Everything else depends on real data storage.
+Backend persistence is the critical-path blocker for multi-user and historical features. ACWR computation and basic risk display already work with mock data.
 
-Authentication can be implemented in parallel with backend persistence but must be complete before multi-user features.
-
-Body map `regionKey` is already the designed join key for ACWR, so no body map refactoring is needed when load/risk features are built.
+Body map `regionKey` is the designed join key for per-muscle-group risk correlation.
 
 ## Risks and Open Decisions
 

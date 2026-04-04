@@ -6,10 +6,7 @@ import { Search } from "lucide-react";
 import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
 import { RiskLevelBadge } from "@/components/risk-badge";
-import { players, getLatestWellness, wellnessEntries, trainingSessions } from "@/lib/mock-data";
-import { calculatePlayerRiskSnapshot } from "@/lib/risk";
-
-const AS_OF = "2026-04-04";
+import { players, getLatestWellness, getAllRiskSnapshots } from "@/lib/mock-data";
 
 const statusStyles: Record<string, string> = {
   available: "bg-emerald-100 text-emerald-700",
@@ -21,7 +18,7 @@ export default function PlayersPage() {
   const [search, setSearch] = useState("");
 
   const snapshots = useMemo(
-    () => new Map(players.map((p) => [p.id, calculatePlayerRiskSnapshot(p.id, trainingSessions, wellnessEntries, AS_OF)])),
+    () => new Map(getAllRiskSnapshots().map((s) => [s.playerId, s])),
     [],
   );
 

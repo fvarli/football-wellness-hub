@@ -1,4 +1,8 @@
-import type { Player, WellnessEntry, BodyMapSelection, TrainingSession } from "./types";
+import type { Player, WellnessEntry, BodyMapSelection, TrainingSession, PlayerRiskSnapshot } from "./types";
+import { calculatePlayerRiskSnapshot } from "./risk";
+
+/** The reference date for all mock-data computations. */
+export const MOCK_AS_OF = "2026-04-04";
 
 export const players: Player[] = [
   { id: "1", name: "Emre Yılmaz", position: "GK", number: 1, age: 28, status: "available" },
@@ -129,4 +133,14 @@ export function getAllLatestWellness(): (WellnessEntry & { player: Player })[] {
     const latest = getLatestWellness(player.id);
     return latest ? { ...latest, player } : null;
   }).filter(Boolean) as (WellnessEntry & { player: Player })[];
+}
+
+/** Risk snapshot for every player, computed from mock data. */
+export function getAllRiskSnapshots(
+  asOf: string = MOCK_AS_OF,
+): (PlayerRiskSnapshot & { player: Player })[] {
+  return players.map((p) => ({
+    ...calculatePlayerRiskSnapshot(p.id, trainingSessions, wellnessEntries, asOf),
+    player: p,
+  }));
 }
