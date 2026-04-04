@@ -33,10 +33,16 @@ export default function WorkloadPage() {
 
   return (
     <AppShell title="Workload">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-muted">
           Recent training sessions and workload data across the squad.
         </p>
+        <Link
+          href="/workload/log"
+          className="rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-600 transition-colors"
+        >
+          + Log Session
+        </Link>
       </div>
 
       {/* Summary cards */}

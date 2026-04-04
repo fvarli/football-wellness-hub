@@ -104,6 +104,7 @@ Both return 201 + entity on success, 400 + `{ errors }` on validation failure.
 | `/players/[id]` | `getPlayerById`, `getWellnessForPlayer`, `getLatestWellness`, `getRiskSnapshot` |
 | `/wellness` | `getAllLatestWellness` |
 | `/workload` | `getAllSessions` |
+| `/workload/log` | Posts to `/api/sessions` via fetch |
 | `/check-in` | Posts to `/api/wellness/check-in` via fetch |
 | `/api/wellness/check-in` | `submitWellnessCheckIn` |
 | `/api/sessions` | `submitTrainingSession` |

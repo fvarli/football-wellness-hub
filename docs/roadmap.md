@@ -99,20 +99,29 @@
 - Duplicate-date check runs after validation passes, before data mutation
 - 106 tests across 8 test files (4 new: duplicate rejection, cross-player same date, error shape stability)
 
+### Milestone 13 — Training Session Creation UI
+- `/workload/log` page with session creation form: date, type selector, duration, RPE rating, notes
+- Live session load preview (RPE x duration) shown before submit
+- Submits via `fetch POST /api/sessions` with loading, success, error, and reset states
+- "Log Session" link added to workload page header
+- `SessionForm` component matches wellness form UX patterns (error summary, loading spinner, success screen)
+- 6 new component tests + 1 new service integration test (session readable after creation)
+
 ## Current Stable Baseline
 
-The application is a **complete frontend prototype with a working API-backed check-in flow and business rule enforcement**:
+The application is a **complete frontend prototype with API-backed write flows for both wellness and workload**:
 - All major UI screens built and navigable
 - Wellness check-in form submits to `POST /api/wellness/check-in` with full validation
+- Training session form submits to `POST /api/sessions` with full validation
 - One check-in per player per day enforced; duplicates rejected
 - Structured error responses with optional field attribution
-- Workload session list with computed load metrics
+- Workload session list with computed load metrics + session creation link
 - Risk computation layer with ACWR, wellness trend, soreness flags, and composite risk level
 - Risk data displayed on dashboard, player list, and player detail pages
 - Data access service layer with validated reads and writes
 - Input validation with regionKey verification against canonical body-regions registry
 - Polished responsive design
-- 106 tests across 8 test files
+- 113 tests across 9 test files
 - Mock data for 8 players with realistic wellness entries and training sessions
 
 All code builds, lints, and tests cleanly.

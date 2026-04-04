@@ -15,6 +15,7 @@ football-wellness-hub/
       players/[id]/page.tsx    Player detail (server component, async params)
       wellness/page.tsx        Squad wellness overview
       workload/page.tsx        Training session list + workload summary
+      workload/log/page.tsx    Training session creation form
       check-in/page.tsx        Player daily check-in
       api/
         wellness/check-in/route.ts   POST — submit wellness check-in
@@ -28,6 +29,7 @@ football-wellness-hub/
       risk-badge.tsx           RiskLevelBadge, TrendBadge, AcwrValue presentational helpers
       rating-input.tsx         1-10 button group for wellness metrics
       wellness-form.tsx        Full check-in form (metrics + body map + notes)
+      session-form.tsx         Training session creation form (type + duration + RPE)
       body-map.tsx             Interactive body map (selection state, picker, list)
       body-map-summary.tsx     Read-only body map summary for detail pages
       male-front-svg.tsx       Anatomical male front SVG with clickable regions
@@ -51,6 +53,7 @@ football-wellness-hub/
       validation.test.ts       Input validation tests (18 cases)
       service-writes.test.ts   Write service integration tests (4 cases)
       wellness-form.test.tsx   Wellness form submit flow tests (5 cases)
+      session-form.test.tsx    Session form submit flow tests (6 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config

@@ -4,6 +4,7 @@ import {
   submitTrainingSession,
   getWellnessForPlayer,
   getSessionsForPlayer,
+  getAllSessions,
 } from "@/lib/data/service";
 
 function validCheckin(overrides: Record<string, unknown> = {}) {
@@ -105,5 +106,22 @@ describe("submitTrainingSession", () => {
     expect(result.ok).toBe(false);
 
     expect(getSessionsForPlayer("1").length).toBe(before);
+  });
+
+  it("created session appears in getAllSessions", () => {
+    const result = submitTrainingSession({
+      playerId: "2",
+      date: "2026-07-01",
+      type: "match",
+      durationMinutes: 90,
+      rpe: 8,
+    });
+    expect(result.ok).toBe(true);
+
+    const all = getAllSessions();
+    const found = all.find((s) => s.id === (result.ok ? result.data.id : ""));
+    expect(found).toBeDefined();
+    expect(found.sessionLoad).toBe(720);
+    expect(found.playerName).toBe("Carlos Mendes");
   });
 });
