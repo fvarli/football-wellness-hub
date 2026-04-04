@@ -1,14 +1,16 @@
 import type { BodyMapSelection } from "@/lib/types";
 
 function severityColor(severity: number): string {
-  if (severity <= 3) return "bg-yellow-100 text-yellow-800";
+  if (severity <= 3) return "bg-amber-100 text-amber-800";
   if (severity <= 6) return "bg-orange-100 text-orange-800";
+  if (severity <= 8) return "bg-orange-200 text-orange-900";
   return "bg-red-100 text-red-800";
 }
 
 function severityLabel(severity: number): string {
   if (severity <= 3) return "Mild";
   if (severity <= 6) return "Moderate";
+  if (severity <= 8) return "High";
   return "Severe";
 }
 

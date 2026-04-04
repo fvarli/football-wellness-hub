@@ -7,22 +7,37 @@ import MaleFrontSvg from "./male-front-svg";
 import MaleBackSvg from "./male-back-svg";
 import { X, Hand } from "lucide-react";
 
-/* ── Severity styling ── */
+/* ── Severity styling (4-band scale) ──
+ *  1-3  mild      #fde68a / #b45309
+ *  4-6  moderate  #fb923c / #c2410c
+ *  7-8  high      #f97316 / #c2410c
+ *  9-10 severe    #dc2626 / #991b1b
+ */
 
 function sevFill(s: number): string {
-  if (s <= 3) return "rgba(250,204,21,0.5)";
-  if (s <= 6) return "rgba(249,115,22,0.55)";
-  return "rgba(239,68,68,0.6)";
+  if (s <= 3) return "#fde68a";
+  if (s <= 6) return "#fb923c";
+  if (s <= 8) return "#f97316";
+  return "#dc2626";
 }
 function sevStroke(s: number): string {
-  if (s <= 3) return "#eab308";
-  if (s <= 6) return "#ea580c";
-  return "#dc2626";
+  if (s <= 3) return "#b45309";
+  if (s <= 6) return "#c2410c";
+  if (s <= 8) return "#9a3412";
+  return "#991b1b";
 }
 function sevLabel(s: number): string {
   if (s <= 3) return "Mild";
   if (s <= 6) return "Moderate";
+  if (s <= 8) return "High";
   return "Severe";
+}
+/** Badge background for the severity chip in the selected-areas list. */
+function sevBadgeBg(s: number): string {
+  if (s <= 3) return "#b45309";
+  if (s <= 6) return "#c2410c";
+  if (s <= 8) return "#9a3412";
+  return "#991b1b";
 }
 
 /* ── Severity picker ── */
@@ -61,9 +76,10 @@ function SeverityPicker({
           const selected = severity === n;
           let cls = "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100";
           if (selected) {
-            if (n <= 3) cls = "bg-yellow-400 text-white border-yellow-500";
-            else if (n <= 6) cls = "bg-orange-500 text-white border-orange-600";
-            else cls = "bg-red-500 text-white border-red-600";
+            if (n <= 3) cls = "bg-amber-300 text-amber-900 border-amber-400";
+            else if (n <= 6) cls = "bg-orange-400 text-white border-orange-500";
+            else if (n <= 8) cls = "bg-orange-500 text-white border-orange-600";
+            else cls = "bg-red-600 text-white border-red-700";
           }
           return (
             <button
@@ -114,7 +130,7 @@ function SelectionList({
           <div className="flex items-center gap-2.5 min-w-0">
             <span
               className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-[11px] font-bold text-white"
-              style={{ backgroundColor: sevStroke(s.severity) }}
+              style={{ backgroundColor: sevBadgeBg(s.severity) }}
             >
               {s.severity}
             </span>
