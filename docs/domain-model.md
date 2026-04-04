@@ -243,11 +243,25 @@ The `regionKey` is the bridge between athlete-reported soreness and derived risk
 
 22 mock training sessions across 3 days for 8 players. `/workload` page shows session list with summary cards. `getAllSessions()` and `getPlayerSessions()` helpers provide sorted, enriched data access.
 
-### Phase 3 — Add Risk Snapshot Computation
+### Phase 3a — Risk Computation Module ✅
 
-Types (`PlayerRiskSnapshot`, `SorenessFlag`, `RiskLevel`, `TrendDirection`) are defined. Next: implement pure computation functions from mock data. Display on dashboard and player detail.
+Pure functions implemented in `src/lib/risk.ts`:
+- `calculateAcuteLoad` — 7-day session load sum
+- `calculateChronicLoad` — 28-day average weekly load
+- `calculateAcwr` — acute/chronic ratio (null if insufficient history)
+- `getLatestWellnessScore` — most recent overallScore
+- `calculateWellnessTrend` — improving/stable/declining from recent vs prior entries
+- `calculateSorenessFlags` — high-severity or recurring muscle flags
+- `calculateRiskLevel` — composite rule-based level from ACWR + trend + flags
+- `calculatePlayerRiskSnapshot` — assembles full snapshot from source data
 
-**Files:** new `lib/risk.ts` computation module, dashboard updates
+30 unit tests cover all functions and edge cases.
+
+### Phase 3b — Risk Display in UI
+
+Next: integrate `calculatePlayerRiskSnapshot` into dashboard and player detail pages.
+
+**Files:** dashboard updates, player detail updates
 
 ### Phase 4 — Backend Persistence
 

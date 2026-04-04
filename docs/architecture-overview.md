@@ -31,13 +31,15 @@ football-wellness-hub/
     lib/
       types.ts                 Shared TypeScript types (Player, WellnessEntry, BodyMapSelection, TrainingSession, PlayerRiskSnapshot)
       body-regions.ts          Canonical muscle region registry + view mapping
-      mock-data.ts             Demo players and wellness entries (body map embedded in entries)
+      mock-data.ts             Demo players, wellness entries, training sessions
+      risk.ts                  Pure computation: ACWR, wellness trend, soreness flags, risk level
     test/
       setup.ts                 Vitest setup (jest-dom matchers)
       vitest.d.ts              Type declarations for Vitest globals + jest-dom
       body-regions.test.ts     Data model tests (16 cases)
       body-map.test.tsx        Component interaction tests (12 cases)
       training-sessions.test.ts  Training session data tests (8 cases)
+      risk.test.ts             Risk computation unit tests (30 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config

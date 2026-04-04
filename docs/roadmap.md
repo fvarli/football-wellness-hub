@@ -48,23 +48,34 @@
 - `getAllSessions()` and `getPlayerSessions()` data helpers
 - Test suite for training session data integrity (8 cases)
 
+### Milestone 7 — Risk Computation Module
+- Pure computation layer in `src/lib/risk.ts` — no side effects, no global state
+- ACWR: 7-day acute load / 28-day chronic load (4-week average weekly)
+- Wellness trend: improving / stable / declining from recent vs prior entry scores
+- Soreness flags: severity >= 7 in last 3 days, or recurring in 3+ of last 5 entries
+- Composite risk level: critical / high / moderate / low from ACWR + trend + flags
+- Full snapshot builder: `calculatePlayerRiskSnapshot()` assembles all derived metrics
+- 30 unit tests covering all functions, edge cases, and boundary conditions
+
 ## Current Stable Baseline
 
 The application is a **complete frontend prototype** with:
 - All major UI screens built and navigable
 - Wellness check-in form with structured body soreness input
 - Workload session list with computed load metrics
+- Risk computation layer with ACWR, wellness trend, soreness flags, and composite risk level
 - Polished responsive design
-- Test coverage for body map behavior and training session data (36 tests)
+- 66 tests across 4 test files (body map, body regions, training sessions, risk computation)
 - Mock data for 8 players with realistic wellness entries and training sessions
 
 All code builds, lints, and tests cleanly.
 
 ## Next Likely Milestones
 
-### ACWR and Injury Risk
-- Acute:Chronic Workload Ratio calculation per player (7-day acute / 28-day chronic)
-- Per-muscle-group risk scoring using body map `regionKey` as join key
+### Risk Display in UI
+- Integrate `calculatePlayerRiskSnapshot` into dashboard and player detail pages
+- Show ACWR, risk level, soreness flags per player
+- Color-coded risk badges on player list and dashboard
 - Risk thresholds and alert rules
 - Dashboard integration for at-risk player identification
 - Requires: pure computation module in `src/lib/risk.ts`
