@@ -2,23 +2,39 @@ import {
   Users,
   AlertTriangle,
   Heart,
-  Activity,
-  TrendingUp,
-  Calendar,
+  ShieldAlert,
 } from "lucide-react";
+import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import StatCard from "@/components/stat-card";
+import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
+import { players, wellnessEntries, trainingSessions } from "@/lib/mock-data";
+import { calculatePlayerRiskSnapshot } from "@/lib/risk";
+
+const AS_OF = "2026-04-04";
 
 export default function DashboardPage() {
+  const snapshots = players.map((p) =>
+    ({ ...calculatePlayerRiskSnapshot(p.id, trainingSessions, wellnessEntries, AS_OF), player: p }),
+  );
+
+  const totalPlayers = players.length;
+  const unavailable = players.filter((p) => p.status !== "available").length;
+  const atRisk = snapshots.filter((s) => s.riskLevel === "high" || s.riskLevel === "critical").length;
+  const avgWellness = snapshots.filter((s) => s.latestWellnessScore !== null).length > 0
+    ? (snapshots.reduce((sum, s) => sum + (s.latestWellnessScore ?? 0), 0) /
+       snapshots.filter((s) => s.latestWellnessScore !== null).length).toFixed(1)
+    : "—";
+  const totalFlagged = snapshots.filter((s) => s.sorenessFlags.length > 0).length;
+
   return (
     <AppShell title="Dashboard">
-      {/* Welcome section */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-foreground">
           Good morning, Coach
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Here&apos;s your squad overview for today.
+          Squad overview as of {AS_OF}.
         </p>
       </div>
 
@@ -26,80 +42,85 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Total Players"
-          value="24"
-          subtitle="3 unavailable"
+          value={String(totalPlayers)}
+          subtitle={`${unavailable} unavailable`}
           icon={Users}
           iconBg="bg-info-light"
           iconColor="text-info"
         />
         <StatCard
           title="Players at Risk"
-          value="5"
-          subtitle="High workload + low wellness"
+          value={String(atRisk)}
+          subtitle="High or critical risk level"
           icon={AlertTriangle}
           iconBg="bg-danger-light"
           iconColor="text-danger"
-          trend={{ value: "2 more than last week", positive: false }}
         />
         <StatCard
           title="Avg. Wellness"
-          value="7.2"
+          value={avgWellness}
           subtitle="Out of 10"
           icon={Heart}
           iconBg="bg-accent-light"
           iconColor="text-accent"
-          trend={{ value: "0.4 from yesterday", positive: true }}
         />
         <StatCard
-          title="Weekly Load"
-          value="1,840"
-          subtitle="AU (arbitrary units)"
-          icon={Activity}
+          title="Soreness Flags"
+          value={String(totalFlagged)}
+          subtitle="Players with flagged muscles"
+          icon={ShieldAlert}
           iconBg="bg-warning-light"
           iconColor="text-warning"
-          trend={{ value: "5% from last week", positive: true }}
         />
       </div>
 
-      {/* Placeholder sections */}
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Recent Wellness */}
-        <div className="rounded-xl border border-card-border bg-card-bg p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">
-              Recent Wellness Entries
-            </h3>
-            <TrendingUp className="h-4 w-4 text-muted" />
-          </div>
-          <div className="mt-6 flex flex-col items-center justify-center py-8 text-center">
-            <Heart className="h-10 w-10 text-card-border" />
-            <p className="mt-3 text-sm font-medium text-muted">
-              No wellness data yet
-            </p>
-            <p className="mt-1 text-xs text-muted">
-              Entries will appear here once players submit daily check-ins.
-            </p>
-          </div>
+      {/* Risk overview table */}
+      <div className="mt-6 rounded-xl border border-card-border bg-card-bg overflow-x-auto">
+        <div className="px-5 pt-4 pb-2">
+          <h3 className="text-sm font-semibold text-foreground">Squad Risk Overview</h3>
         </div>
-
-        {/* Upcoming Sessions */}
-        <div className="rounded-xl border border-card-border bg-card-bg p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">
-              Upcoming Sessions
-            </h3>
-            <Calendar className="h-4 w-4 text-muted" />
-          </div>
-          <div className="mt-6 flex flex-col items-center justify-center py-8 text-center">
-            <Activity className="h-10 w-10 text-card-border" />
-            <p className="mt-3 text-sm font-medium text-muted">
-              No sessions scheduled
-            </p>
-            <p className="mt-1 text-xs text-muted">
-              Training sessions and match data will show up here.
-            </p>
-          </div>
-        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-card-border text-left">
+              <th className="px-5 py-2 font-medium text-muted">Player</th>
+              <th className="px-3 py-2 text-center font-medium text-muted">Risk</th>
+              <th className="px-3 py-2 text-center font-medium text-muted">ACWR</th>
+              <th className="px-3 py-2 text-center font-medium text-muted">Wellness</th>
+              <th className="px-3 py-2 text-center font-medium text-muted">Trend</th>
+              <th className="px-3 py-2 text-center font-medium text-muted">Flags</th>
+            </tr>
+          </thead>
+          <tbody>
+            {snapshots
+              .sort((a, b) => {
+                const order: Record<string, number> = { critical: 0, high: 1, moderate: 2, low: 3 };
+                return (order[a.riskLevel] ?? 9) - (order[b.riskLevel] ?? 9);
+              })
+              .map((s) => (
+                <tr key={s.playerId} className="border-b border-card-border/50 last:border-0 hover:bg-gray-50/50">
+                  <td className="px-5 py-3">
+                    <Link href={`/players/${s.playerId}`} className="font-medium text-foreground hover:text-accent transition-colors">
+                      {s.player.name}
+                    </Link>
+                    <span className="ml-2 text-xs text-muted">{s.player.position}</span>
+                  </td>
+                  <td className="px-3 py-3 text-center"><RiskLevelBadge level={s.riskLevel} /></td>
+                  <td className="px-3 py-3 text-center"><AcwrValue acwr={s.acwr} /></td>
+                  <td className="px-3 py-3 text-center">
+                    {s.latestWellnessScore !== null
+                      ? <span className="text-sm font-semibold text-foreground">{s.latestWellnessScore.toFixed(1)}</span>
+                      : <span className="text-xs text-muted">—</span>}
+                  </td>
+                  <td className="px-3 py-3 text-center"><TrendBadge trend={s.wellnessTrend} /></td>
+                  <td className="px-3 py-3 text-center">
+                    {s.sorenessFlags.length > 0
+                      ? <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-orange-700">{s.sorenessFlags.length}</span>
+                      : <span className="text-xs text-muted">0</span>}
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
       </div>
     </AppShell>
   );

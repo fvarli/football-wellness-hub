@@ -22,6 +22,7 @@ football-wellness-hub/
       header.tsx               Top bar with title, notification, avatar
       stat-card.tsx            Dashboard stat card
       wellness-badge.tsx       Colored score badge
+      risk-badge.tsx           RiskLevelBadge, TrendBadge, AcwrValue presentational helpers
       rating-input.tsx         1-10 button group for wellness metrics
       wellness-form.tsx        Full check-in form (metrics + body map + notes)
       body-map.tsx             Interactive body map (selection state, picker, list)
@@ -40,6 +41,7 @@ football-wellness-hub/
       body-map.test.tsx        Component interaction tests (12 cases)
       training-sessions.test.ts  Training session data tests (8 cases)
       risk.test.ts             Risk computation unit tests (30 cases)
+      risk-badge.test.tsx      Risk badge component tests (9 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config

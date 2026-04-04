@@ -57,6 +57,14 @@
 - Full snapshot builder: `calculatePlayerRiskSnapshot()` assembles all derived metrics
 - 30 unit tests covering all functions, edge cases, and boundary conditions
 
+### Milestone 8 — Risk Display in UI
+- Dashboard: live stat cards computed from risk snapshots (at-risk count, avg wellness, flagged players) + full squad risk table sorted by risk level
+- Player list: per-player risk level badge alongside status and wellness score
+- Player detail: risk profile card with ACWR value, risk level badge, wellness trend, soreness flag count + flag detail rows
+- Presentational components: `RiskLevelBadge`, `TrendBadge`, `AcwrValue` in `risk-badge.tsx`
+- 9 component tests for risk badge rendering
+- All dashboard stat cards now driven by real computed data instead of hardcoded values
+
 ## Current Stable Baseline
 
 The application is a **complete frontend prototype** with:
@@ -64,20 +72,12 @@ The application is a **complete frontend prototype** with:
 - Wellness check-in form with structured body soreness input
 - Workload session list with computed load metrics
 - Risk computation layer with ACWR, wellness trend, soreness flags, and composite risk level
+- Risk data displayed on dashboard, player list, and player detail pages
 - Polished responsive design
-- 66 tests across 4 test files (body map, body regions, training sessions, risk computation)
+- 75 tests across 5 test files
 - Mock data for 8 players with realistic wellness entries and training sessions
 
 All code builds, lints, and tests cleanly.
-
-## Next Likely Milestones
-
-### Risk Display in UI
-- Integrate `calculatePlayerRiskSnapshot` into dashboard and player detail pages
-- Show ACWR, risk level, soreness flags per player
-- Color-coded risk badges on player list and dashboard
-- Risk thresholds and alert rules
-- Dashboard integration for at-risk player identification
 - Requires: pure computation module in `src/lib/risk.ts`
 
 ### Backend Persistence

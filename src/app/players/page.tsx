@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
-import { players, getLatestWellness } from "@/lib/mock-data";
+import { RiskLevelBadge } from "@/components/risk-badge";
+import { players, getLatestWellness, wellnessEntries, trainingSessions } from "@/lib/mock-data";
+import { calculatePlayerRiskSnapshot } from "@/lib/risk";
+
+const AS_OF = "2026-04-04";
 
 const statusStyles: Record<string, string> = {
   available: "bg-emerald-100 text-emerald-700",
@@ -15,6 +19,11 @@ const statusStyles: Record<string, string> = {
 
 export default function PlayersPage() {
   const [search, setSearch] = useState("");
+
+  const snapshots = useMemo(
+    () => new Map(players.map((p) => [p.id, calculatePlayerRiskSnapshot(p.id, trainingSessions, wellnessEntries, AS_OF)])),
+    [],
+  );
 
   const filtered = players.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -40,6 +49,7 @@ export default function PlayersPage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {filtered.map((player) => {
           const latest = getLatestWellness(player.id);
+          const snap = snapshots.get(player.id);
           return (
             <Link
               key={player.id}
@@ -47,7 +57,6 @@ export default function PlayersPage() {
               className="group rounded-xl border border-card-border bg-card-bg p-4 transition-shadow hover:shadow-md"
             >
               <div className="flex items-center gap-3">
-                {/* Avatar */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-bold text-slate-600">
                   {player.name.split(" ").map((n) => n[0]).join("")}
                 </div>
@@ -67,11 +76,14 @@ export default function PlayersPage() {
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <span
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusStyles[player.status]}`}
-                >
-                  {player.status}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusStyles[player.status]}`}
+                  >
+                    {player.status}
+                  </span>
+                  {snap && <RiskLevelBadge level={snap.riskLevel} />}
+                </div>
                 {latest ? (
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs text-muted">Wellness</span>

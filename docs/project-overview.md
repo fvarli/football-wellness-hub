@@ -27,9 +27,9 @@ Replace spreadsheet-based wellness tracking with a purpose-built tool that:
 
 | Page | Route | Status |
 |---|---|---|
-| Dashboard | `/dashboard` | Mock stat cards (total players, at-risk, avg wellness, weekly load) |
-| Player list | `/players` | 8 demo players with search, status badges, latest wellness scores |
-| Player detail | `/players/[id]` | Profile header, latest check-in breakdown, body soreness summary, wellness history table |
+| Dashboard | `/dashboard` | Live stat cards (total players, at-risk, avg wellness, soreness flags) + squad risk table |
+| Player list | `/players` | 8 demo players with search, status badges, wellness scores, risk level badges |
+| Player detail | `/players/[id]` | Profile header, risk profile card (ACWR, trend, flags), latest check-in, body soreness, wellness history |
 | Wellness overview | `/wellness` | Squad-wide color-coded wellness table |
 | Workload | `/workload` | Training session list with summary cards (total sessions, avg load, highest load) |
 | Daily check-in | `/check-in` | 6-metric wellness form + anatomical body soreness map |

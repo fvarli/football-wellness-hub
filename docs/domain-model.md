@@ -257,11 +257,14 @@ Pure functions implemented in `src/lib/risk.ts`:
 
 30 unit tests cover all functions and edge cases.
 
-### Phase 3b — Risk Display in UI
+### Phase 3b — Risk Display in UI ✅
 
-Next: integrate `calculatePlayerRiskSnapshot` into dashboard and player detail pages.
+Risk snapshots computed and displayed on:
+- **Dashboard:** stat cards (at-risk count, avg wellness, soreness flags) + squad risk table sorted by risk level
+- **Player list:** per-player risk level badge alongside status and wellness score
+- **Player detail:** risk profile card showing risk level, ACWR, wellness trend, soreness flag count + flag details
 
-**Files:** dashboard updates, player detail updates
+Presentational components: `RiskLevelBadge`, `TrendBadge`, `AcwrValue` in `src/components/risk-badge.tsx`.
 
 ### Phase 4 — Backend Persistence
 
