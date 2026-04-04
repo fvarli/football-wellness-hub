@@ -22,7 +22,7 @@
 3. Optionally expands the Body Soreness Map section.
 4. Taps muscle regions on the anatomical SVG to focus them, then picks a severity (1-10, higher = worse).
 5. Adds optional free-text notes.
-6. Submits via `POST /api/wellness/check-in`. A loading spinner shows during the request. On success, a confirmation appears with the count of marked body areas. On validation failure, error messages appear above the form and all entered values are preserved. Only one check-in per player per day is allowed — a duplicate submission is rejected with a clear error.
+6. Submits via `POST /api/wellness/check-in`. A loading spinner shows during the request. On success, a confirmation appears with the count of marked body areas. On validation failure, error messages appear above the form and all entered values are preserved. Only one check-in per player per day is allowed — a duplicate POST is rejected with a clear error. To update an existing entry, use `PUT /api/wellness/check-in` with the entry's `entryId`. Body map selections are fully replaced on update (not merged).
 
 ### Why Severity Is Not Auto-Assigned
 

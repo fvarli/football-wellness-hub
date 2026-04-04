@@ -119,33 +119,39 @@
 - Risk snapshots still computed on-the-fly (not persisted)
 - 111 tests across 9 test files (service-writes tests refactored to test validation layer directly)
 
+### Milestone 15 — Persistence Hardening + Wellness Update Flow
+- `updateWellnessCheckIn(entryId, input)` in service layer — validates, finds entry, prevents cross-player edit, replaces body map child rows in Prisma transaction
+- `PUT /api/wellness/check-in` route — requires `entryId` in body, returns 200 on success
+- POST still rejects same-day duplicates; PUT is the explicit update path
+- Integration test suite (`src/test/integration/`) with separate vitest config (node environment, requires DB)
+- `npm run test:integration` script added
+- 3 new unit tests for update validation contract
+- 6 integration tests: create + duplicate rejection, update + body map replacement, not-found, cross-player rejection, risk reads updated data
+- README.md rewritten with full setup, routes, scripts, architecture
+- 114 unit tests + 6 integration tests
+
 ## Current Stable Baseline
 
-The application is a **full-stack prototype with PostgreSQL persistence**:
+The application is a **full-stack prototype with PostgreSQL persistence and wellness update flow**:
 - All major UI screens built and navigable
 - Data persisted in PostgreSQL via Prisma 7
-- Wellness check-in and training session creation via validated API routes
+- Wellness check-in: POST creates, PUT updates (body map child rows replaced in transaction)
+- Training session creation via validated POST route
+- One check-in per player per day enforced (POST rejects, PUT updates)
 - Body map selections stored as normalized child rows, assembled on read
-- One check-in per player per day enforced at the service layer
 - Risk computation (ACWR, wellness trend, soreness flags) computed from persisted data
 - Risk data displayed on dashboard, player list, and player detail pages
 - Input validation with regionKey verification against canonical body-regions registry
 - Polished responsive design
-- 111 tests across 9 test files
+- 114 unit tests (no DB required) + 6 integration tests (requires DB)
 - Database seeded from mock data for 8 players
 
-All code builds, lints, and tests cleanly.
+All code builds, lints, and unit tests pass cleanly.
 
 ## Next Likely Milestones
 
-### Backend Persistence
-- API routes or external backend for wellness entries and training sessions
-- Database for players, entries, body map selections, sessions
-- Replace mock data with real API calls
-- All TypeScript interfaces are already designed for serialization
-
 ### Authentication and RBAC
-- Login flow (likely OAuth or credential-based)
+- Login flow (OAuth or credential-based)
 - Role assignment: Admin, Coach, Player
 - Route protection via middleware or layout-level guards
 - Sidebar section visibility based on role
@@ -164,23 +170,19 @@ All code builds, lints, and tests cleanly.
 ## Dependencies and Sequencing
 
 ```
-Backend Persistence
-  ├── Authentication / RBAC
+Authentication / RBAC
   └── Analytics / Trends
         └── Advanced Risk Features
 ```
 
-Backend persistence is the critical-path blocker for multi-user and historical features. ACWR computation and basic risk display already work with mock data.
-
-Body map `regionKey` is the designed join key for per-muscle-group risk correlation.
+Backend persistence is complete. Authentication is the next blocker for multi-user features.
 
 ## Risks and Open Decisions
 
 | Item | Status |
 |---|---|
-| Backend technology choice | Not decided. Options: Next.js API routes + Prisma, separate Express/NestJS service, or BaaS like Supabase. |
+| Backend technology | Decided: Next.js API routes + Prisma 7 + PostgreSQL |
 | Auth provider | Not decided. Options: NextAuth.js, Clerk, Auth0, custom. |
-| Female body map | Deferred. The reference source includes female SVGs but they are not integrated. Adding them requires a gender/body-type selector in the check-in flow. |
-| Real-time features | Not decided. WebSocket or polling for live dashboard updates depends on backend architecture. |
-| Mobile native app | Not planned. The web app is responsive and works on mobile browsers. A native wrapper (Capacitor, React Native) could be considered later. |
-| Data migration from spreadsheets | Likely needed if replacing an existing tracking process. Format TBD. |
+| Female body map | Deferred. Requires gender/body-type selector in check-in flow. |
+| Real-time features | Not decided. Depends on auth architecture. |
+| Mobile native app | Not planned. Responsive web app works on mobile browsers. |

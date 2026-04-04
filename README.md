@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Football Wellness Hub
 
-## Getting Started
+Professional football player wellness, workload, and injury-risk monitoring web application.
 
-First, run the development server:
+## Quick Start
+
+### Prerequisites
+
+- Node.js 22+
+- PostgreSQL 14+
+
+### Setup
 
 ```bash
+npm install
+
+# Edit .env and set DATABASE_URL to your PostgreSQL instance
+npx prisma generate
+npm run db:migrate
+npm run db:seed
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Language | TypeScript 5 |
+| Database | PostgreSQL via Prisma 7 |
+| UI | React 19, Tailwind CSS 4, Lucide Icons |
+| Testing | Vitest 4, React Testing Library |
 
-## Learn More
+### Data Flow
 
-To learn more about Next.js, take a look at the following resources:
+```
+Pages (server components, async)
+  -> src/lib/data/service.ts (async Prisma queries)
+    -> PostgreSQL
+    -> src/lib/risk.ts (computed on-the-fly)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Client forms (check-in, log session)
+  -> fetch POST/PUT to /api/* routes
+    -> src/lib/validation.ts (trust boundary)
+      -> src/lib/data/service.ts (persist)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Pages
 
-## Deploy on Vercel
+| Route | Description |
+|---|---|
+| `/dashboard` | Squad risk overview with ACWR, wellness, soreness flags |
+| `/players` | Player roster with search, risk badges, wellness scores |
+| `/players/[id]` | Player detail: risk profile, check-in, body soreness, history |
+| `/wellness` | Squad-wide wellness overview table |
+| `/workload` | Training session list with load metrics |
+| `/workload/log` | Log a training session (type, duration, RPE) |
+| `/check-in` | Daily wellness check-in with anatomical body soreness map |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API Routes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Route | Method | Description |
+|---|---|---|
+| `/api/wellness/check-in` | POST | Create wellness entry (rejects same-day duplicate) |
+| `/api/wellness/check-in` | PUT | Update existing wellness entry by entryId |
+| `/api/sessions` | POST | Log a training session |
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm test` | Unit tests (no DB required) |
+| `npm run test:integration` | Integration tests (requires DB) |
+| `npm run lint` | Lint check |
+| `npm run db:migrate` | Apply database migrations |
+| `npm run db:seed` | Seed database with demo data |
+| `npm run db:reset` | Drop + recreate + re-seed |
+
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+
+Example: `postgresql://postgres:postgres@localhost:5432/football_wellness_hub?schema=public`
+
+## Documentation
+
+Detailed docs in `/docs`:
+
+- [Project Overview](docs/project-overview.md)
+- [Architecture Overview](docs/architecture-overview.md)
+- [Data Access Layer](docs/data-access-layer.md)
+- [Domain Model](docs/domain-model.md)
+- [Database Schema](docs/database-schema.md)
+- [Persistence Plan](docs/persistence-plan.md)
+- [Body Map Architecture](docs/body-map-architecture.md)
+- [Product Requirements](docs/product-requirements.md)
+- [Roadmap](docs/roadmap.md)

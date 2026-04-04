@@ -244,6 +244,73 @@ export async function submitWellnessCheckIn(
   return { ok: true, data: mapWellnessEntry(row) };
 }
 
+/**
+ * Update an existing wellness check-in by entry ID.
+ * Validates input, replaces body map child rows, recomputes overallScore.
+ * Returns the updated entry or validation/business-rule errors.
+ */
+export async function updateWellnessCheckIn(
+  entryId: string,
+  input: unknown,
+): Promise<ValidationResult<WellnessEntry>> {
+  const result = validateWellnessCheckIn(input);
+  if (!result.ok) return result;
+
+  const d = result.data;
+
+  const existing = await prisma.wellnessEntry.findUnique({
+    where: { id: entryId },
+  });
+  if (!existing) {
+    return {
+      ok: false,
+      errors: [{ field: "id", message: `Wellness entry ${entryId} not found` }],
+    };
+  }
+
+  // Ensure the playerId matches (prevent cross-player edits)
+  if (existing.playerId !== d.playerId) {
+    return {
+      ok: false,
+      errors: [{ field: "playerId", message: "Cannot change the player for an existing entry" }],
+    };
+  }
+
+  // Replace body map: delete old selections, create new ones
+  const row = await prisma.$transaction(async (tx) => {
+    await tx.wellnessBodyMapSelection.deleteMany({
+      where: { wellnessEntryId: entryId },
+    });
+
+    return tx.wellnessEntry.update({
+      where: { id: entryId },
+      data: {
+        date: d.date,
+        fatigue: d.fatigue,
+        soreness: d.soreness,
+        sleepQuality: d.sleepQuality,
+        recovery: d.recovery,
+        stress: d.stress,
+        mood: d.mood,
+        overallScore: d.overallScore,
+        notes: d.notes ?? null,
+        bodyMapSelections: {
+          create: d.bodyMap.map((bm) => ({
+            regionKey: bm.regionKey,
+            label: bm.label,
+            view: bm.view,
+            side: bm.side,
+            severity: bm.severity,
+          })),
+        },
+      },
+      include: WELLNESS_INCLUDE,
+    });
+  });
+
+  return { ok: true, data: mapWellnessEntry(row) };
+}
+
 export async function submitTrainingSession(
   input: unknown,
 ): Promise<ValidationResult<TrainingSession>> {
