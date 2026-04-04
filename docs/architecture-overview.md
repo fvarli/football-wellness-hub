@@ -32,7 +32,9 @@ football-wellness-hub/
     lib/
       types.ts                 Shared TypeScript types (Player, WellnessEntry, BodyMapSelection, TrainingSession, PlayerRiskSnapshot)
       body-regions.ts          Canonical muscle region registry + view mapping
-      mock-data.ts             Demo players, wellness entries, training sessions
+      data/
+        service.ts             Data access service — single import point for all page data reads
+      mock-data.ts             Static seed arrays (not imported by pages directly)
       risk.ts                  Pure computation: ACWR, wellness trend, soreness flags, risk level
     test/
       setup.ts                 Vitest setup (jest-dom matchers)
@@ -66,7 +68,7 @@ User interaction
           → CSS currentColor drives severity fill
 ```
 
-There is no global state management (no Redux, no Zustand, no Context). Each page manages its own data. The check-in form owns wellness ratings, body map selections, and notes as local state, then submits them together.
+There is no global state management (no Redux, no Zustand, no Context). Each page manages its own data. Pages read from `src/lib/data/service.ts`, which wraps the mock data arrays. The check-in form owns wellness ratings, body map selections, and notes as local state, then submits them together.
 
 ### Body Map Data Flow
 

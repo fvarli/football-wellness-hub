@@ -5,9 +5,8 @@ import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
 import BodyMapSummary from "@/components/body-map-summary";
 import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
-import { getPlayer, getPlayerWellness, getLatestWellness, wellnessEntries, trainingSessions, MOCK_AS_OF } from "@/lib/mock-data";
+import { getPlayerById, getWellnessForPlayer, getLatestWellness, getRiskSnapshot } from "@/lib/data/service";
 import { WELLNESS_METRICS } from "@/lib/types";
-import { calculatePlayerRiskSnapshot } from "@/lib/risk";
 
 const statusStyles: Record<string, string> = {
   available: "bg-emerald-100 text-emerald-700",
@@ -28,18 +27,17 @@ export default async function PlayerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const player = getPlayer(id);
+  const player = getPlayerById(id);
 
   if (!player) notFound();
 
-  const entries = getPlayerWellness(player.id);
+  const entries = getWellnessForPlayer(player.id);
   const latest = getLatestWellness(player.id);
   const latestBodyMap = latest?.bodyMap ?? [];
-  const snap = calculatePlayerRiskSnapshot(player.id, trainingSessions, wellnessEntries, MOCK_AS_OF);
+  const snap = getRiskSnapshot(player.id);
 
   return (
     <AppShell title={player.name}>
-      {/* Back link */}
       <Link
         href="/players"
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"

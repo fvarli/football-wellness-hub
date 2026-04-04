@@ -65,6 +65,15 @@
 - 9 component tests for risk badge rendering
 - All dashboard stat cards now driven by real computed data instead of hardcoded values
 
+### Milestone 9 — Data Access Layer and Persistence Planning
+- Data service abstraction in `src/lib/data/service.ts` — all pages read through this single entry point
+- Pages no longer import `mock-data.ts` directly
+- Persistence planning docs: `persistence-plan.md`, `data-access-layer.md`, `database-schema.md`
+- Recommended stack: Next.js API routes + Prisma + PostgreSQL
+- Body map storage decision: embedded JSONB (not child rows)
+- Database schema with indexes, audit fields, Prisma preview
+- Migration path from mock arrays → Prisma queries documented
+
 ## Current Stable Baseline
 
 The application is a **complete frontend prototype** with:
@@ -73,6 +82,7 @@ The application is a **complete frontend prototype** with:
 - Workload session list with computed load metrics
 - Risk computation layer with ACWR, wellness trend, soreness flags, and composite risk level
 - Risk data displayed on dashboard, player list, and player detail pages
+- Data access service layer decoupling pages from raw mock data
 - Polished responsive design
 - 75 tests across 5 test files
 - Mock data for 8 players with realistic wellness entries and training sessions

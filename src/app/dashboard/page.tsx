@@ -8,29 +8,19 @@ import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import StatCard from "@/components/stat-card";
 import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
-import { getAllRiskSnapshots, MOCK_AS_OF } from "@/lib/mock-data";
-import type { RiskLevel } from "@/lib/types";
-
-const RISK_ORDER: Record<RiskLevel, number> = { critical: 0, high: 1, moderate: 2, low: 3 };
+import { getAllRiskSnapshotsSorted, MOCK_AS_OF } from "@/lib/data/service";
 
 export default function DashboardPage() {
-  const snapshots = getAllRiskSnapshots();
+  const sorted = getAllRiskSnapshotsSorted();
 
-  const totalPlayers = snapshots.length;
-  const unavailable = snapshots.filter((s) => s.player.status !== "available").length;
-  const atRisk = snapshots.filter((s) => s.riskLevel === "high" || s.riskLevel === "critical").length;
-  const withWellness = snapshots.filter((s) => s.latestWellnessScore !== null);
+  const totalPlayers = sorted.length;
+  const unavailable = sorted.filter((s) => s.player.status !== "available").length;
+  const atRisk = sorted.filter((s) => s.riskLevel === "high" || s.riskLevel === "critical").length;
+  const withWellness = sorted.filter((s) => s.latestWellnessScore !== null);
   const avgWellness = withWellness.length > 0
     ? (withWellness.reduce((sum, s) => sum + s.latestWellnessScore!, 0) / withWellness.length).toFixed(1)
     : "—";
-  const totalFlagged = snapshots.filter((s) => s.sorenessFlags.length > 0).length;
-
-  const sorted = [...snapshots].sort((a, b) =>
-    (RISK_ORDER[a.riskLevel] - RISK_ORDER[b.riskLevel])
-    || (b.sorenessFlags.length - a.sorenessFlags.length)
-    || ((a.latestWellnessScore ?? 99) - (b.latestWellnessScore ?? 99))
-    || a.player.name.localeCompare(b.player.name)
-  );
+  const totalFlagged = sorted.filter((s) => s.sorenessFlags.length > 0).length;
 
   return (
     <AppShell title="Dashboard">
@@ -43,7 +33,6 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Total Players"
@@ -79,7 +68,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Risk overview table */}
       <div className="mt-6 rounded-xl border border-card-border bg-card-bg overflow-x-auto">
         <div className="px-5 pt-4 pb-2">
           <h3 className="text-sm font-semibold text-foreground">Squad Risk Overview</h3>

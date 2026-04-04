@@ -2,7 +2,7 @@ import { Dumbbell, TrendingUp, Flame, Activity } from "lucide-react";
 import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import StatCard from "@/components/stat-card";
-import { getAllSessions } from "@/lib/mock-data";
+import { getAllSessions } from "@/lib/data/service";
 import type { SessionType } from "@/lib/types";
 
 const typeStyles: Record<SessionType, string> = {

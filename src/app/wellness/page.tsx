@@ -1,7 +1,7 @@
 import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
-import { getAllLatestWellness } from "@/lib/mock-data";
+import { getAllLatestWellness } from "@/lib/data/service";
 import { WELLNESS_METRICS } from "@/lib/types";
 
 const statusStyles: Record<string, string> = {
