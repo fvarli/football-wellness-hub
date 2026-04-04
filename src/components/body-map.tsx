@@ -176,9 +176,30 @@ export default function BodyMap({ selections, onChange, readOnly }: BodyMapProps
 
   function handleRegionClick(key: string) {
     if (readOnly) return;
-    setActiveKey((prev) => (prev === key ? null : key));
-    const view = getPrimaryView(key);
-    setMobileView(view);
+
+    const existing = selections.find((s) => s.regionKey === key);
+    if (!existing) {
+      // First click on unselected region: create with default severity 3
+      const meta = getRegionMeta(key);
+      if (meta && onChange) {
+        onChange([
+          ...selections,
+          {
+            regionKey: key,
+            label: meta.label,
+            view: getPrimaryView(key),
+            side: meta.side as BodySide | null,
+            severity: 3,
+          },
+        ]);
+      }
+      setActiveKey(key);
+    } else {
+      // Already selected: toggle editor focus
+      setActiveKey((prev) => (prev === key ? null : key));
+    }
+
+    setMobileView(getPrimaryView(key));
   }
 
   function handleSeverityChange(severity: number) {
