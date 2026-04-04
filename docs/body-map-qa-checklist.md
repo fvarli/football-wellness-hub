@@ -12,14 +12,14 @@ Manual verification steps for the anatomical body soreness map feature.
 
 ## Canonical Key / Front-Back Unity
 
-- [ ] Select L. Shoulder from the front view. Switch to back view. The L. Shoulder region on the back should also be highlighted with the same severity color.
+- [ ] Focus L. Shoulder from the front view and pick a severity. Switch to back view. The L. Shoulder region on the back should also be highlighted with the same severity color.
 - [ ] Click L. Shoulder on the back view. The severity picker should open for the existing selection, not create a duplicate.
-- [ ] Repeat the above for L. Calf and L. Forearm (all three are shared front/back regions).
+- [ ] Repeat for L. Calf and L. Forearm (all three are shared front/back regions).
 - [ ] Verify the selected areas list always shows one entry per muscle, not two.
 
 ## Severity
 
-- [ ] Select a region, then click severity buttons 1 through 10 in order. The SVG fill color should progress through the 4-band scale: mild (amber) at 1–3, moderate (orange) at 4–6, high (deeper orange) at 7–8, severe (red) at 9–10.
+- [ ] Focus a region and click severity buttons 1 through 10 in order. The SVG fill color should progress through the 4-band scale: mild (amber) at 1–3, moderate (orange) at 4–6, high (deeper orange) at 7–8, severe (red) at 9–10.
 - [ ] The severity number badge in the selected areas list should update in real-time.
 - [ ] The severity label text (Mild / Moderate / High / Severe) should match the number.
 
@@ -31,8 +31,8 @@ Manual verification steps for the anatomical body soreness map feature.
 
 ## Sorting
 
-- [ ] Select 3+ regions with different severities. The selected areas list should show highest severity first.
-- [ ] Select 2 regions with the same severity. They should be sorted alphabetically by label.
+- [ ] Create 3+ selections with different severities. The selected areas list should show highest severity first.
+- [ ] Create 2 selections with the same severity. They should be sorted alphabetically by label.
 
 ## Read-Only Mode
 
@@ -51,12 +51,12 @@ Manual verification steps for the anatomical body soreness map feature.
 - [ ] **Desktop hover (selected):** Hovering a selected muscle should slightly brighten it.
 - [ ] **Tooltip:** Hovering a muscle should show a native tooltip with the muscle label (e.g. "L. Quadriceps").
 - [ ] **Keyboard (Tab):** Tab through muscle regions. The focused region should show a blue outline ring (focus-visible only, not on mouse click).
-- [ ] **Keyboard (Enter/Space):** Pressing Enter or Space on a focused region should select it.
+- [ ] **Keyboard (Enter/Space):** Pressing Enter or Space on a region should focus it and open the severity picker (same as click).
 
 ## Form Integration
 
 - [ ] Navigate to /check-in. Open the "Body Soreness Map" collapsible section.
-- [ ] Select 2-3 regions with different severities.
+- [ ] Create 2-3 selections with different severities.
 - [ ] Fill out the rest of the wellness form and submit.
 - [ ] The success screen should show the count of marked body areas.
 - [ ] Click "Submit Another" — body map selections should be cleared.

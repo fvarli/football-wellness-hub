@@ -38,7 +38,7 @@ Six muscles have SVG paths in both front and back views:
 - `left_forearm` / `right_forearm`
 - `left_calf` / `right_calf`
 
-Clicking the shoulder from the front or back SVG writes to the same `left_shoulder` key. The `REGION_VIEWS` map in `body-regions.ts` tracks which views each key appears in. The `view` field in a stored `BodyMapSelection` records which view was used at selection time — it's informational, not a key component.
+Clicking the shoulder from the front or back SVG focuses the same `left_shoulder` key. When a severity is chosen, the selection is stored under that single key. The `REGION_VIEWS` map in `body-regions.ts` tracks which views each key appears in. The `view` field in a stored `BodyMapSelection` records which view was used at selection time — it's informational, not a key component.
 
 ## Rendering Architecture
 
