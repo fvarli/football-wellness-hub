@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
+// Mock Next.js router
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ back: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
+}));
+
 // Mock SVG components (same as body-map tests)
 vi.mock("@/components/male-front-svg", () => ({
   default: () => <div data-testid="front-svg" />,
@@ -147,5 +152,77 @@ describe("WellnessForm submit flow", () => {
 
     // Resolve to clean up
     resolvePromise!({ ok: true, json: () => Promise.resolve({ id: "w99", bodyMap: [] }) });
+  });
+});
+
+describe("WellnessForm edit mode", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const mockEntry = {
+    id: "w50",
+    playerId: "1",
+    date: "2026-04-04",
+    fatigue: 5,
+    soreness: 4,
+    sleepQuality: 6,
+    recovery: 5,
+    stress: 6,
+    mood: 6,
+    overallScore: 5.3,
+    bodyMap: [],
+    notes: "Some notes",
+  };
+
+  it("pre-fills form values from initialEntry", () => {
+    render(<WellnessForm playerId="1" initialEntry={mockEntry} />);
+
+    // The submit button should say "Update Check-in" in edit mode
+    expect(screen.getByRole("button", { name: /update check-in/i })).toBeInTheDocument();
+    // Notes should be pre-filled
+    expect(screen.getByDisplayValue("Some notes")).toBeInTheDocument();
+  });
+
+  it("sends PUT request with entryId in edit mode", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ ...mockEntry, overallScore: 7, bodyMap: [] }),
+    });
+
+    render(<WellnessForm playerId="1" initialEntry={mockEntry} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /update check-in/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/check-in updated/i)).toBeInTheDocument();
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/wellness/check-in",
+      expect.objectContaining({ method: "PUT" }),
+    );
+
+    // Verify entryId is in the body
+    const callBody = JSON.parse((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
+    expect(callBody.entryId).toBe("w50");
+  });
+
+  it("shows Back to Player button after successful update", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ ...mockEntry, bodyMap: [] }),
+    });
+
+    render(<WellnessForm playerId="1" initialEntry={mockEntry} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /update check-in/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /back to player/i })).toBeInTheDocument();
+    });
+
+    // Should NOT show "Submit Another" in edit mode
+    expect(screen.queryByRole("button", { name: /submit another/i })).not.toBeInTheDocument();
   });
 });

@@ -55,6 +55,7 @@ Client forms (check-in, log session)
 | `/dashboard` | Squad risk overview with ACWR, wellness, soreness flags |
 | `/players` | Player roster with search, risk badges, wellness scores |
 | `/players/[id]` | Player detail: risk profile, check-in, body soreness, history |
+| `/players/[id]/edit-checkin` | Edit latest wellness check-in (pre-filled form, PUT) |
 | `/wellness` | Squad-wide wellness overview table |
 | `/workload` | Training session list with load metrics |
 | `/workload/log` | Log a training session (type, duration, RPE) |

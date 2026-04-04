@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { WELLNESS_METRICS, type WellnessMetric, type BodyMapSelection } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { WELLNESS_METRICS, type WellnessMetric, type BodyMapSelection, type WellnessEntry } from "@/lib/types";
 import RatingInput from "./rating-input";
 import BodyMap from "./body-map";
 import { CheckCircle, ChevronDown, ChevronUp, Loader2, AlertCircle } from "lucide-react";
@@ -9,13 +10,30 @@ import { CheckCircle, ChevronDown, ChevronUp, Loader2, AlertCircle } from "lucid
 interface WellnessFormProps {
   playerId: string;
   playerName?: string;
+  /** If provided, the form opens in edit mode with these values pre-filled. */
+  initialEntry?: WellnessEntry;
 }
 
-export default function WellnessForm({ playerId, playerName }: WellnessFormProps) {
-  const [ratings, setRatings] = useState<Partial<Record<WellnessMetric, number>>>({});
-  const [notes, setNotes] = useState("");
-  const [bodySelections, setBodySelections] = useState<BodyMapSelection[]>([]);
-  const [bodyMapOpen, setBodyMapOpen] = useState(false);
+export default function WellnessForm({ playerId, playerName, initialEntry }: WellnessFormProps) {
+  const router = useRouter();
+  const isEdit = !!initialEntry;
+
+  const [ratings, setRatings] = useState<Partial<Record<WellnessMetric, number>>>(() => {
+    if (!initialEntry) return {};
+    return {
+      fatigue: initialEntry.fatigue,
+      soreness: initialEntry.soreness,
+      sleepQuality: initialEntry.sleepQuality,
+      recovery: initialEntry.recovery,
+      stress: initialEntry.stress,
+      mood: initialEntry.mood,
+    };
+  });
+  const [notes, setNotes] = useState(initialEntry?.notes ?? "");
+  const [bodySelections, setBodySelections] = useState<BodyMapSelection[]>(
+    initialEntry?.bodyMap ?? [],
+  );
+  const [bodyMapOpen, setBodyMapOpen] = useState((initialEntry?.bodyMap?.length ?? 0) > 0);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -31,9 +49,9 @@ export default function WellnessForm({ playerId, playerName }: WellnessFormProps
     setErrors([]);
     setSubmitting(true);
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       playerId,
-      date: new Date().toISOString().slice(0, 10),
+      date: initialEntry?.date ?? new Date().toISOString().slice(0, 10),
       ...(ratings as Record<WellnessMetric, number>),
       notes: notes || undefined,
       bodyMap: bodySelections.map((s) => ({
@@ -44,9 +62,13 @@ export default function WellnessForm({ playerId, playerName }: WellnessFormProps
       })),
     };
 
+    if (isEdit) {
+      payload.entryId = initialEntry.id;
+    }
+
     try {
       const res = await fetch("/api/wellness/check-in", {
-        method: "POST",
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -55,7 +77,7 @@ export default function WellnessForm({ playerId, playerName }: WellnessFormProps
 
       if (!res.ok) {
         const apiErrors: string[] = Array.isArray(data.errors)
-          ? data.errors.map((e: { message?: string }) => e.message ?? String(e))
+          ? data.errors.map((err: { message?: string }) => err.message ?? String(err))
           : ["Submission failed"];
         setErrors(apiErrors);
         setSubmitting(false);
@@ -85,22 +107,36 @@ export default function WellnessForm({ playerId, playerName }: WellnessFormProps
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <CheckCircle className="h-16 w-16 text-accent" />
-        <h3 className="mt-4 text-xl font-bold text-foreground">Check-in Complete</h3>
+        <h3 className="mt-4 text-xl font-bold text-foreground">
+          {isEdit ? "Check-in Updated" : "Check-in Complete"}
+        </h3>
         <p className="mt-2 text-sm text-muted">
-          {playerName ? `${playerName}'s` : "Your"} wellness data has been recorded.
+          {playerName ? `${playerName}'s` : "Your"} wellness data has been {isEdit ? "updated" : "recorded"}.
         </p>
         {bodyMapCount > 0 && (
           <p className="mt-1 text-xs text-muted">
             {bodyMapCount} body area{bodyMapCount > 1 ? "s" : ""} marked.
           </p>
         )}
-        <button
-          type="button"
-          onClick={resetForm}
-          className="mt-6 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition-colors"
-        >
-          Submit Another
-        </button>
+        <div className="mt-6 flex gap-3">
+          {isEdit ? (
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition-colors"
+            >
+              Back to Player
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition-colors"
+            >
+              Submit Another
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -208,10 +244,10 @@ export default function WellnessForm({ playerId, playerName }: WellnessFormProps
         {submitting ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Submitting...
+            {isEdit ? "Updating..." : "Submitting..."}
           </>
         ) : (
-          "Submit Check-in"
+          isEdit ? "Update Check-in" : "Submit Check-in"
         )}
       </button>
     </form>

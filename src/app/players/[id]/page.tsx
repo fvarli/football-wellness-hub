@@ -115,9 +115,17 @@ export default async function PlayerDetailPage({
       {/* Latest scores breakdown */}
       {latest && (
         <div className="mt-4 rounded-xl border border-card-border bg-card-bg p-5">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">
-            Latest Check-in &mdash; {latest.date}
-          </h3>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">
+              Latest Check-in &mdash; {latest.date}
+            </h3>
+            <Link
+              href={`/players/${player.id}/edit-checkin`}
+              className="rounded-md bg-gray-100 px-3 py-1 text-xs font-medium text-muted hover:bg-gray-200 hover:text-foreground transition-colors"
+            >
+              Edit
+            </Link>
+          </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {WELLNESS_METRICS.map((metric) => (
               <div key={metric.key} className="text-center">

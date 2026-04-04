@@ -17,6 +17,7 @@ football-wellness-hub/
       workload/page.tsx        Training session list + workload summary
       workload/log/page.tsx    Training session creation form
       check-in/page.tsx        Player daily check-in
+      players/[id]/edit-checkin/page.tsx  Edit latest wellness check-in (pre-filled form, PUT)
       api/
         wellness/check-in/route.ts   POST — create wellness check-in, PUT — update by entryId
         sessions/route.ts            POST — log training session
