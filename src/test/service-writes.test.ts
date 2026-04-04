@@ -6,16 +6,22 @@ import {
   getSessionsForPlayer,
 } from "@/lib/data/service";
 
+function validCheckin(overrides: Record<string, unknown> = {}) {
+  return {
+    playerId: "1",
+    fatigue: 7, soreness: 7, sleepQuality: 7, recovery: 7, stress: 7, mood: 7,
+    ...overrides,
+  };
+}
+
 describe("submitWellnessCheckIn", () => {
   it("creates a wellness entry and makes it readable", () => {
     const before = getWellnessForPlayer("1").length;
 
-    const result = submitWellnessCheckIn({
-      playerId: "1",
-      date: "2026-04-10",
-      fatigue: 7, soreness: 7, sleepQuality: 7, recovery: 7, stress: 7, mood: 7,
+    const result = submitWellnessCheckIn(validCheckin({
+      date: "2026-05-01",
       bodyMap: [{ regionKey: "chest", severity: 4, view: "front", side: "center" }],
-    });
+    }));
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -36,6 +42,39 @@ describe("submitWellnessCheckIn", () => {
 
     expect(getWellnessForPlayer("1").length).toBe(before);
   });
+
+  it("rejects duplicate same-day submission for the same player", () => {
+    // First submit should succeed
+    const first = submitWellnessCheckIn(validCheckin({ date: "2026-06-15" }));
+    expect(first.ok).toBe(true);
+
+    // Second submit for same player + date should fail
+    const second = submitWellnessCheckIn(validCheckin({ date: "2026-06-15" }));
+    expect(second.ok).toBe(false);
+    if (!second.ok) {
+      expect(second.errors[0].field).toBe("date");
+      expect(second.errors[0].message).toContain("already exists");
+      expect(second.errors[0].message).toContain("2026-06-15");
+    }
+  });
+
+  it("allows same date for different players", () => {
+    const r1 = submitWellnessCheckIn(validCheckin({ playerId: "4", date: "2026-06-20" }));
+    const r2 = submitWellnessCheckIn(validCheckin({ playerId: "5", date: "2026-06-20" }));
+    expect(r1.ok).toBe(true);
+    expect(r2.ok).toBe(true);
+  });
+
+  it("returns WriteError shape on failure", () => {
+    const result = submitWellnessCheckIn({ playerId: "1" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      for (const err of result.errors) {
+        expect(err).toHaveProperty("message");
+        expect(typeof err.message).toBe("string");
+      }
+    }
+  });
 });
 
 describe("submitTrainingSession", () => {
@@ -44,7 +83,7 @@ describe("submitTrainingSession", () => {
 
     const result = submitTrainingSession({
       playerId: "1",
-      date: "2026-04-10",
+      date: "2026-05-01",
       type: "training",
       durationMinutes: 60,
       rpe: 7,

@@ -29,6 +29,7 @@ import {
   validateWellnessCheckIn,
   validateTrainingSession,
   type ValidationResult,
+  type WriteError,
   type ValidatedWellnessCheckIn,
   type ValidatedTrainingSession,
 } from "@/lib/validation";
@@ -125,9 +126,9 @@ let _nextWellnessId = _wellness.length + 1;
 let _nextSessionId = _sessions.length + 1;
 
 /**
- * Submit a wellness check-in. Validates input, computes overallScore,
- * resolves body map labels from the region registry, and stores the entry.
- * Returns the created entry or validation errors.
+ * Submit a wellness check-in. Validates input, enforces one-entry-per-day,
+ * computes overallScore, resolves body map labels, and stores the entry.
+ * Rejects if an entry already exists for the same player + date.
  */
 export function submitWellnessCheckIn(
   input: unknown,
@@ -136,6 +137,21 @@ export function submitWellnessCheckIn(
   if (!result.ok) return result;
 
   const d = result.data;
+
+  // Business rule: one wellness entry per player per day
+  const existing = _wellness.find(
+    (e) => e.playerId === d.playerId && e.date === d.date,
+  );
+  if (existing) {
+    return {
+      ok: false,
+      errors: [{
+        field: "date",
+        message: `A check-in already exists for this player on ${d.date}`,
+      }],
+    };
+  }
+
   const entry: WellnessEntry = {
     id: `w${_nextWellnessId++}`,
     playerId: d.playerId,
@@ -182,4 +198,4 @@ export function submitTrainingSession(
 }
 
 // Re-export validation types for API routes
-export type { ValidationResult, ValidatedWellnessCheckIn, ValidatedTrainingSession };
+export type { ValidationResult, WriteError, ValidatedWellnessCheckIn, ValidatedTrainingSession };

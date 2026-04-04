@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { validateWellnessCheckIn, validateTrainingSession } from "@/lib/validation";
+import {
+  validateWellnessCheckIn,
+  validateTrainingSession,
+  type WriteError,
+} from "@/lib/validation";
+
+/** Extract message strings from WriteError[] for assertion convenience. */
+function msgs(errors: WriteError[]): string[] {
+  return errors.map((e) => e.message);
+}
 
 // ── Wellness check-in ──
 
@@ -23,7 +32,7 @@ describe("validateWellnessCheckIn", () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.data.playerId).toBe("1");
-      expect(r.data.overallScore).toBe(7); // (7+6+8+7+6+8)/6 = 7.0
+      expect(r.data.overallScore).toBe(7);
       expect(r.data.bodyMap).toEqual([]);
     }
   });
@@ -48,33 +57,37 @@ describe("validateWellnessCheckIn", () => {
       fatigue: 10, soreness: 10, sleepQuality: 10, recovery: 10, stress: 10, mood: 4,
     }));
     expect(r.ok).toBe(true);
-    if (r.ok) {
-      expect(r.data.overallScore).toBe(9); // (10*5+4)/6 = 9.0
-    }
+    if (r.ok) expect(r.data.overallScore).toBe(9);
   });
 
   it("rejects missing playerId", () => {
     const r = validateWellnessCheckIn(validCheckin({ playerId: "" }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors).toContain("playerId is required");
+    if (!r.ok) {
+      expect(msgs(r.errors)).toContain("playerId is required");
+      expect(r.errors[0].field).toBe("playerId");
+    }
   });
 
   it("rejects invalid date format", () => {
     const r = validateWellnessCheckIn(validCheckin({ date: "04/05/2026" }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors).toContain("date must be YYYY-MM-DD format");
+    if (!r.ok) expect(msgs(r.errors)).toContain("date must be YYYY-MM-DD format");
   });
 
   it("rejects metric out of range", () => {
     const r = validateWellnessCheckIn(validCheckin({ fatigue: 0 }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors).toContain("fatigue must be an integer 1-10");
+    if (!r.ok) {
+      expect(msgs(r.errors)).toContain("fatigue must be an integer 1-10");
+      expect(r.errors[0].field).toBe("fatigue");
+    }
   });
 
   it("rejects metric that is not an integer", () => {
     const r = validateWellnessCheckIn(validCheckin({ soreness: 5.5 }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors).toContain("soreness must be an integer 1-10");
+    if (!r.ok) expect(msgs(r.errors)).toContain("soreness must be an integer 1-10");
   });
 
   it("rejects invalid regionKey in bodyMap", () => {
@@ -82,7 +95,10 @@ describe("validateWellnessCheckIn", () => {
       bodyMap: [{ regionKey: "fake_muscle", severity: 5, view: "front", side: null }],
     }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]).toContain('invalid regionKey "fake_muscle"');
+    if (!r.ok) {
+      expect(r.errors[0].message).toContain('invalid regionKey "fake_muscle"');
+      expect(r.errors[0].field).toBe("bodyMap[0].regionKey");
+    }
   });
 
   it("rejects duplicate regionKey in bodyMap", () => {
@@ -93,7 +109,7 @@ describe("validateWellnessCheckIn", () => {
       ],
     }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]).toContain('duplicate regionKey "chest"');
+    if (!r.ok) expect(r.errors[0].message).toContain('duplicate regionKey "chest"');
   });
 
   it("rejects bodyMap severity out of range", () => {
@@ -101,7 +117,7 @@ describe("validateWellnessCheckIn", () => {
       bodyMap: [{ regionKey: "chest", severity: 11, view: "front", side: "center" }],
     }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]).toContain("severity must be an integer 1-10");
+    if (!r.ok) expect(r.errors[0].message).toContain("severity must be an integer 1-10");
   });
 
   it("collects multiple errors at once", () => {
@@ -113,7 +129,18 @@ describe("validateWellnessCheckIn", () => {
   it("rejects non-object input", () => {
     const r = validateWellnessCheckIn("not an object");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors).toContain("Input must be an object");
+    if (!r.ok) expect(msgs(r.errors)).toContain("Input must be an object");
+  });
+
+  it("returns errors with WriteError shape", () => {
+    const r = validateWellnessCheckIn(validCheckin({ fatigue: 0 }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      for (const err of r.errors) {
+        expect(err).toHaveProperty("message");
+        expect(typeof err.message).toBe("string");
+      }
+    }
   });
 });
 
@@ -143,19 +170,22 @@ describe("validateTrainingSession", () => {
   it("rejects invalid session type", () => {
     const r = validateTrainingSession(validSession({ type: "yoga" }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]).toContain("type must be one of");
+    if (!r.ok) {
+      expect(r.errors[0].message).toContain("type must be one of");
+      expect(r.errors[0].field).toBe("type");
+    }
   });
 
   it("rejects durationMinutes out of range", () => {
     const r = validateTrainingSession(validSession({ durationMinutes: 0 }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]).toContain("durationMinutes must be an integer 1-600");
+    if (!r.ok) expect(r.errors[0].message).toContain("durationMinutes must be an integer 1-600");
   });
 
   it("rejects rpe out of range", () => {
     const r = validateTrainingSession(validSession({ rpe: 11 }));
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]).toContain("rpe must be an integer 1-10");
+    if (!r.ok) expect(r.errors[0].message).toContain("rpe must be an integer 1-10");
   });
 
   it("derives sessionLoad as rpe * durationMinutes", () => {

@@ -19,9 +19,14 @@ import { MUSCLE_REGIONS } from "./body-regions";
 
 // ── Result type ──
 
+export interface WriteError {
+  field?: string;   // omitted for form-level errors
+  message: string;
+}
+
 export type ValidationResult<T> =
   | { ok: true; data: T }
-  | { ok: false; errors: string[] };
+  | { ok: false; errors: WriteError[] };
 
 // ── Wellness check-in input ──
 
@@ -105,44 +110,39 @@ function inRange(v: unknown, min: number, max: number): v is number {
 export function validateWellnessCheckIn(
   input: unknown,
 ): ValidationResult<ValidatedWellnessCheckIn> {
-  const errors: string[] = [];
+  const errors: WriteError[] = [];
 
   if (typeof input !== "object" || input === null) {
-    return { ok: false, errors: ["Input must be an object"] };
+    return { ok: false, errors: [{ message: "Input must be an object" }] };
   }
 
   const raw = input as Record<string, unknown>;
 
-  // playerId
   if (typeof raw.playerId !== "string" || raw.playerId.length === 0) {
-    errors.push("playerId is required");
+    errors.push({ field: "playerId", message: "playerId is required" });
   }
 
-  // date
   if (typeof raw.date !== "string" || !DATE_RE.test(raw.date)) {
-    errors.push("date must be YYYY-MM-DD format");
+    errors.push({ field: "date", message: "date must be YYYY-MM-DD format" });
   }
 
-  // 6 metrics
   const metrics = ["fatigue", "soreness", "sleepQuality", "recovery", "stress", "mood"] as const;
   for (const m of metrics) {
     if (!inRange(raw[m], 1, 10)) {
-      errors.push(`${m} must be an integer 1-10`);
+      errors.push({ field: m, message: `${m} must be an integer 1-10` });
     }
   }
 
-  // notes (optional)
   if (raw.notes !== undefined && typeof raw.notes !== "string") {
-    errors.push("notes must be a string if provided");
+    errors.push({ field: "notes", message: "notes must be a string if provided" });
   }
 
-  // bodyMap (optional array)
   const bodyMapInput = raw.bodyMap;
   const validatedBodyMap: ValidatedBodyMapSelection[] = [];
 
   if (bodyMapInput !== undefined) {
     if (!Array.isArray(bodyMapInput)) {
-      errors.push("bodyMap must be an array if provided");
+      errors.push({ field: "bodyMap", message: "bodyMap must be an array if provided" });
     } else {
       const seenKeys = new Set<string>();
 
@@ -150,28 +150,27 @@ export function validateWellnessCheckIn(
         const sel = bodyMapInput[i] as Record<string, unknown>;
 
         if (typeof sel !== "object" || sel === null) {
-          errors.push(`bodyMap[${i}]: must be an object`);
+          errors.push({ field: `bodyMap[${i}]`, message: "must be an object" });
           continue;
         }
 
         const rk = sel.regionKey;
         if (typeof rk !== "string" || !VALID_REGION_KEYS.has(rk)) {
-          errors.push(`bodyMap[${i}]: invalid regionKey "${String(rk)}"`);
+          errors.push({ field: `bodyMap[${i}].regionKey`, message: `invalid regionKey "${String(rk)}"` });
           continue;
         }
 
         if (seenKeys.has(rk)) {
-          errors.push(`bodyMap[${i}]: duplicate regionKey "${rk}"`);
+          errors.push({ field: `bodyMap[${i}].regionKey`, message: `duplicate regionKey "${rk}"` });
           continue;
         }
         seenKeys.add(rk);
 
         if (!inRange(sel.severity, 1, 10)) {
-          errors.push(`bodyMap[${i}]: severity must be an integer 1-10`);
+          errors.push({ field: `bodyMap[${i}].severity`, message: "severity must be an integer 1-10" });
           continue;
         }
 
-        // Resolve label from registry
         const meta = MUSCLE_REGIONS.find((r) => r.key === rk)!;
         validatedBodyMap.push({
           regionKey: rk,
@@ -215,36 +214,36 @@ export function validateWellnessCheckIn(
 export function validateTrainingSession(
   input: unknown,
 ): ValidationResult<ValidatedTrainingSession> {
-  const errors: string[] = [];
+  const errors: WriteError[] = [];
 
   if (typeof input !== "object" || input === null) {
-    return { ok: false, errors: ["Input must be an object"] };
+    return { ok: false, errors: [{ message: "Input must be an object" }] };
   }
 
   const raw = input as Record<string, unknown>;
 
   if (typeof raw.playerId !== "string" || raw.playerId.length === 0) {
-    errors.push("playerId is required");
+    errors.push({ field: "playerId", message: "playerId is required" });
   }
 
   if (typeof raw.date !== "string" || !DATE_RE.test(raw.date)) {
-    errors.push("date must be YYYY-MM-DD format");
+    errors.push({ field: "date", message: "date must be YYYY-MM-DD format" });
   }
 
   if (typeof raw.type !== "string" || !VALID_SESSION_TYPES.includes(raw.type as SessionType)) {
-    errors.push(`type must be one of: ${VALID_SESSION_TYPES.join(", ")}`);
+    errors.push({ field: "type", message: `type must be one of: ${VALID_SESSION_TYPES.join(", ")}` });
   }
 
   if (!inRange(raw.durationMinutes, 1, 600)) {
-    errors.push("durationMinutes must be an integer 1-600");
+    errors.push({ field: "durationMinutes", message: "durationMinutes must be an integer 1-600" });
   }
 
   if (!inRange(raw.rpe, 1, 10)) {
-    errors.push("rpe must be an integer 1-10");
+    errors.push({ field: "rpe", message: "rpe must be an integer 1-10" });
   }
 
   if (raw.notes !== undefined && typeof raw.notes !== "string") {
-    errors.push("notes must be a string if provided");
+    errors.push({ field: "notes", message: "notes must be a string if provided" });
   }
 
   if (errors.length > 0) {

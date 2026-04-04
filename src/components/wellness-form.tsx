@@ -54,7 +54,10 @@ export default function WellnessForm({ playerId, playerName }: WellnessFormProps
       const data = await res.json();
 
       if (!res.ok) {
-        setErrors(data.errors ?? ["Submission failed"]);
+        const apiErrors: string[] = Array.isArray(data.errors)
+          ? data.errors.map((e: { message?: string }) => e.message ?? String(e))
+          : ["Submission failed"];
+        setErrors(apiErrors);
         setSubmitting(false);
         return;
       }

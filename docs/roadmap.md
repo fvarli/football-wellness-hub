@@ -92,18 +92,27 @@
 - Demo `playerId` hardcoded until auth exists
 - 5 new tests: successful submit, API error display, network error, success reset, loading state
 
+### Milestone 12 — Wellness Write Business Rules
+- One check-in per player per day enforced in service layer (duplicate rejected with clear error)
+- Error shape standardized to `WriteError { field?: string; message: string }` across all write paths
+- Field-level error attribution on all validation and business rule failures
+- Duplicate-date check runs after validation passes, before data mutation
+- 106 tests across 8 test files (4 new: duplicate rejection, cross-player same date, error shape stability)
+
 ## Current Stable Baseline
 
-The application is a **complete frontend prototype with a working API-backed check-in flow**:
+The application is a **complete frontend prototype with a working API-backed check-in flow and business rule enforcement**:
 - All major UI screens built and navigable
 - Wellness check-in form submits to `POST /api/wellness/check-in` with full validation
+- One check-in per player per day enforced; duplicates rejected
+- Structured error responses with optional field attribution
 - Workload session list with computed load metrics
 - Risk computation layer with ACWR, wellness trend, soreness flags, and composite risk level
 - Risk data displayed on dashboard, player list, and player detail pages
 - Data access service layer with validated reads and writes
 - Input validation with regionKey verification against canonical body-regions registry
 - Polished responsive design
-- 102 tests across 8 test files
+- 106 tests across 8 test files
 - Mock data for 8 players with realistic wellness entries and training sessions
 
 All code builds, lints, and tests cleanly.

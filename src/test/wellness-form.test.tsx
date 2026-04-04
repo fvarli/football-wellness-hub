@@ -64,7 +64,10 @@ describe("WellnessForm submit flow", () => {
   it("shows validation errors from the API on 400", async () => {
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({ errors: ["fatigue must be an integer 1-10", "date must be YYYY-MM-DD format"] }),
+      json: () => Promise.resolve({ errors: [
+        { field: "fatigue", message: "fatigue must be an integer 1-10" },
+        { field: "date", message: "date must be YYYY-MM-DD format" },
+      ] }),
     });
 
     render(<WellnessForm playerId="1" />);

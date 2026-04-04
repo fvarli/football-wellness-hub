@@ -59,10 +59,14 @@ All functions are currently synchronous. When backed by a database, they become 
 
 | Function | Signature | Notes |
 |---|---|---|
-| `submitWellnessCheckIn(input)` | `(input: unknown) => ValidationResult<WellnessEntry>` | Validates, derives overallScore, resolves bodyMap labels from registry, stores entry |
+| `submitWellnessCheckIn(input)` | `(input: unknown) => ValidationResult<WellnessEntry>` | Validates, rejects duplicate same-day submission, derives overallScore, resolves bodyMap labels from registry, stores entry |
 | `submitTrainingSession(input)` | `(input: unknown) => ValidationResult<TrainingSession>` | Validates, derives sessionLoad (rpe × duration), stores session |
 
-Write methods accept `unknown` and validate internally. On success they return `{ ok: true, data }`. On failure, `{ ok: false, errors: string[] }`.
+Write methods accept `unknown` and validate internally. On success they return `{ ok: true, data }`. On failure, `{ ok: false, errors: WriteError[] }` where each error has `{ field?: string; message: string }`.
+
+### Business rules (enforced in service, not validation)
+
+- **One wellness entry per player per day.** A second submission for the same `playerId + date` is rejected with a `date` field error. The player must use a different date or an update endpoint (not yet implemented).
 
 ### Validation rules
 
