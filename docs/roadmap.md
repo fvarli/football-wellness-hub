@@ -167,12 +167,24 @@
 - All databases switched to local PostgreSQL (Docker removed)
 - 117 unit tests + 7 integration tests, all passing
 
+### Auth Completion — Session Propagation + RBAC Tests + Coach Player Picker
+- All protected pages pass session `userRole`/`userName` to AppShell → Sidebar
+- Sidebar shows real user name and role for every page
+- 13 auth/RBAC unit tests covering hasRole, canAccessPlayer, documented authorization rules
+- Coach/admin player picker at `/check-in`: dropdown selects player, then opens WellnessForm
+- Players see own check-in form directly; coaches/admins see player picker
+- Staff sidebar includes "Submit Check-in" link
+- No hardcoded playerId anywhere in the codebase
+- 130 unit tests + 7 integration tests, all passing
+
 ## Current Stable Baseline
 
-The application is a **full-stack application with authentication, RBAC, and PostgreSQL persistence**:
-- All major UI screens built and navigable
-- Auth.js v5 authentication with credentials provider
-- Role-based access control: admin, coach, player
+The application is a **full-stack application with complete authentication, RBAC, and PostgreSQL persistence**:
+- All major UI screens built with session-aware navigation
+- Auth.js v5 authentication with credentials provider and JWT sessions
+- Role-based access control: admin, coach, player — enforced via middleware + API routes
+- Every page passes real user identity to AppShell/Sidebar
+- Coach/admin player picker on check-in page
 - Data persisted in PostgreSQL via Prisma 7
 - Wellness check-in: POST creates, PUT updates, identity from session
 - Training session creation restricted to coach/admin
@@ -181,9 +193,8 @@ The application is a **full-stack application with authentication, RBAC, and Pos
 - Body map selections stored as normalized child rows
 - Risk computation (ACWR, wellness trend, soreness flags) from persisted data
 - Risk data displayed on dashboard, player list, and player detail pages
-- Sidebar navigation filtered by user role
 - Polished responsive design
-- 117 unit tests + 7 integration tests, all passing
+- 130 unit tests + 7 integration tests, all passing
 
 All four checks pass: unit tests, integration tests, build, lint.
 

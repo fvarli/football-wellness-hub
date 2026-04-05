@@ -9,10 +9,12 @@ import AppShell from "@/components/app-shell";
 import StatCard from "@/components/stat-card";
 import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
 import { getAllRiskSnapshotsSorted, MOCK_AS_OF } from "@/lib/data/service";
+import { getCurrentUser } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const user = await getCurrentUser();
   const sorted = await getAllRiskSnapshotsSorted();
 
   const totalPlayers = sorted.length;
@@ -25,7 +27,7 @@ export default async function DashboardPage() {
   const totalFlagged = sorted.filter((s) => s.sorenessFlags.length > 0).length;
 
   return (
-    <AppShell title="Dashboard">
+    <AppShell title="Dashboard" userRole={user?.role} userName={user?.name}>
       <div className="mb-6">
         <h2 className="text-xl font-bold text-foreground">
           Good morning, Coach

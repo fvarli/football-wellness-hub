@@ -12,7 +12,7 @@ export default async function LogSessionPage() {
 
   if (!hasRole(user, ["admin", "coach"])) {
     return (
-      <AppShell title="Log Session">
+      <AppShell title="Log Session" userRole={user?.role} userName={user?.name}>
         <div className="mx-auto max-w-lg py-16 text-center">
           <p className="text-sm text-muted">
             Only coaches and admins can log training sessions.
@@ -23,7 +23,7 @@ export default async function LogSessionPage() {
   }
 
   return (
-    <AppShell title="Log Session">
+    <AppShell title="Log Session" userRole={user?.role} userName={user?.name}>
       <div className="mx-auto max-w-lg">
         <div className="mb-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent-light">

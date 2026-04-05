@@ -18,13 +18,18 @@ import {
 
 const TEST_PLAYER = "1"; // Emre Yilmaz (from seed)
 
-function uniqueDate(prefix: string) {
-  return `${prefix}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}`;
+// Use a run-unique prefix so tests don't collide across runs
+const RUN_ID = String(Date.now()).slice(-6);
+let seq = 0;
+function uniqueDate() {
+  seq++;
+  // Generates dates like 3001-01-01, 3001-01-02, etc. — never collides with seed data
+  return `30${RUN_ID.slice(0, 2)}-${String((seq % 12) + 1).padStart(2, "0")}-${String((seq % 28) + 1).padStart(2, "0")}`;
 }
 
 describe("submitWellnessCheckIn (integration)", () => {
   it("creates an entry with bodyMap and makes it readable", async () => {
-    const date = uniqueDate("2099-01");
+    const date = uniqueDate();
     const result = await submitWellnessCheckIn({
       playerId: TEST_PLAYER,
       date,
@@ -47,7 +52,7 @@ describe("submitWellnessCheckIn (integration)", () => {
   });
 
   it("rejects duplicate same-day POST", async () => {
-    const date = uniqueDate("2099-12");
+    const date = uniqueDate();
     const base = {
       playerId: TEST_PLAYER, date,
       fatigue: 7, soreness: 7, sleepQuality: 7, recovery: 7, stress: 7, mood: 7,
@@ -67,7 +72,7 @@ describe("submitWellnessCheckIn (integration)", () => {
 
 describe("updateWellnessCheckIn (integration)", () => {
   it("updates metrics and replaces bodyMap child rows", async () => {
-    const date = uniqueDate("2099-02");
+    const date = uniqueDate();
     const create = await submitWellnessCheckIn({
       playerId: TEST_PLAYER, date,
       fatigue: 5, soreness: 5, sleepQuality: 5, recovery: 5, stress: 5, mood: 5,
@@ -107,7 +112,7 @@ describe("updateWellnessCheckIn (integration)", () => {
   });
 
   it("rejects cross-player update", async () => {
-    const date = uniqueDate("2099-03");
+    const date = uniqueDate();
     const create = await submitWellnessCheckIn({
       playerId: TEST_PLAYER, date,
       fatigue: 7, soreness: 7, sleepQuality: 7, recovery: 7, stress: 7, mood: 7,
@@ -132,7 +137,7 @@ describe("submitTrainingSession (integration)", () => {
 
     const result = await submitTrainingSession({
       playerId: TEST_PLAYER,
-      date: uniqueDate("2099-05"),
+      date: uniqueDate(),
       type: "training",
       durationMinutes: 60,
       rpe: 7,
@@ -149,7 +154,7 @@ describe("submitTrainingSession (integration)", () => {
 
 describe("risk reads updated data (integration)", () => {
   it("risk snapshot reflects the latest persisted wellness", async () => {
-    const date = uniqueDate("2099-04");
+    const date = uniqueDate();
     const create = await submitWellnessCheckIn({
       playerId: TEST_PLAYER, date,
       fatigue: 3, soreness: 3, sleepQuality: 3, recovery: 3, stress: 3, mood: 3,

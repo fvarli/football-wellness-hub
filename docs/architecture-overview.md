@@ -34,6 +34,8 @@ football-wellness-hub/
       rating-input.tsx         1-10 button group for wellness metrics
       wellness-form.tsx        Full check-in form (metrics + body map + notes)
       session-form.tsx         Training session creation form (type + duration + RPE)
+      player-picker-checkin.tsx  Coach/admin player selector + wellness form wrapper
+      players-list.tsx         Client-side player search (receives data from server component)
       body-map.tsx             Interactive body map (selection state, picker, list)
       body-map-summary.tsx     Read-only body map summary for detail pages
       male-front-svg.tsx       Anatomical male front SVG with clickable regions
@@ -63,8 +65,9 @@ football-wellness-hub/
       integration/
         setup.ts               Integration test setup
         wellness-writes.test.ts  Prisma-backed write integration tests (6 cases, requires DB)
-      wellness-form.test.tsx   Wellness form submit flow tests (5 cases)
+      wellness-form.test.tsx   Wellness form submit flow tests (8 cases)
       session-form.test.tsx    Session form submit flow tests (6 cases)
+      auth-api.test.ts         Auth/RBAC logic tests (13 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config

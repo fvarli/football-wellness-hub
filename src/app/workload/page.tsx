@@ -3,6 +3,7 @@ import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import StatCard from "@/components/stat-card";
 import { getAllSessions } from "@/lib/data/service";
+import { getCurrentUser } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 import type { SessionType } from "@/lib/types";
@@ -22,6 +23,7 @@ function loadColor(load: number): string {
 }
 
 export default async function WorkloadPage() {
+  const user = await getCurrentUser();
   const sessions = await getAllSessions();
 
   const totalSessions = sessions.length;
@@ -34,7 +36,7 @@ export default async function WorkloadPage() {
   const maxSession = sessions.find((s) => s.sessionLoad === maxLoad);
 
   return (
-    <AppShell title="Workload">
+    <AppShell title="Workload" userRole={user?.role} userName={user?.name}>
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-muted">
           Recent training sessions and workload data across the squad.

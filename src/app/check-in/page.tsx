@@ -3,21 +3,33 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import AppShell from "@/components/app-shell";
 import WellnessForm from "@/components/wellness-form";
+import PlayerPickerCheckIn from "@/components/player-picker-checkin";
 import { ClipboardCheck } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth-utils";
+import { getCurrentUser, hasRole } from "@/lib/auth-utils";
+import { getAllPlayers } from "@/lib/data/service";
 
 export default async function CheckInPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // Players submit for themselves; coaches/admins need to select a player (future UI)
+  // Coach/admin: show player picker
+  if (hasRole(user, ["admin", "coach"])) {
+    const players = await getAllPlayers();
+    return (
+      <AppShell title="Submit Check-in" userRole={user.role} userName={user.name}>
+        <PlayerPickerCheckIn players={players} userRole={user.role} userName={user.name} />
+      </AppShell>
+    );
+  }
+
+  // Player: submit for themselves
   const playerId = user.playerId;
   if (!playerId) {
     return (
-      <AppShell title="Daily Check-in">
+      <AppShell title="Daily Check-in" userRole={user.role} userName={user.name}>
         <div className="mx-auto max-w-lg py-16 text-center">
           <p className="text-sm text-muted">
-            Check-in is available for player accounts only. Coaches and admins can submit on behalf of a player from the player detail page (coming soon).
+            Your account is not linked to a player profile. Contact an administrator.
           </p>
         </div>
       </AppShell>
@@ -25,7 +37,7 @@ export default async function CheckInPage() {
   }
 
   return (
-    <AppShell title="Daily Check-in">
+    <AppShell title="Daily Check-in" userRole={user.role} userName={user.name}>
       <div className="mx-auto max-w-lg">
         <div className="mb-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent-light">

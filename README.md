@@ -72,7 +72,7 @@ Client forms (check-in, log session)
 | `/wellness` | Coach, Admin | Squad wellness overview |
 | `/workload` | Coach, Admin | Training session list |
 | `/workload/log` | Coach, Admin | Log a training session |
-| `/check-in` | Player | Daily wellness check-in |
+| `/check-in` | Player: own check-in; Coach/Admin: player picker | Daily wellness check-in |
 
 ## API Routes
 
@@ -86,7 +86,7 @@ Client forms (check-in, log session)
 ## Authorization Rules
 
 - **Player**: can create/update only their own wellness check-ins. Can view their own player detail and dashboard. Cannot access squad-wide pages (players list, wellness overview, workload).
-- **Coach/Admin**: can view all squad data, log training sessions, submit check-ins on behalf of players.
+- **Coach/Admin**: can view all squad data, log training sessions, submit check-ins on behalf of any player via the player picker on `/check-in`.
 - **API routes**: derive identity from session, not from client-supplied playerId. Players' playerId is forced from session.
 
 ## Scripts
@@ -95,7 +95,7 @@ Client forms (check-in, log session)
 |---|---|
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm test` | Unit tests (117 tests, no DB required) |
+| `npm test` | Unit tests (130 tests, no DB required) |
 | `npm run test:integration` | Integration tests (7 tests, requires DB) |
 | `npm run test:all` | Both test suites |
 | `npm run lint` | Lint check |

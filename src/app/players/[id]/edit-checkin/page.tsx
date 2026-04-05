@@ -6,12 +6,14 @@ import { ArrowLeft } from "lucide-react";
 import AppShell from "@/components/app-shell";
 import WellnessForm from "@/components/wellness-form";
 import { getPlayerById, getLatestWellness } from "@/lib/data/service";
+import { getCurrentUser } from "@/lib/auth-utils";
 
 export default async function EditCheckInPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await getCurrentUser();
   const { id } = await params;
   const player = await getPlayerById(id);
   if (!player) notFound();
@@ -20,7 +22,7 @@ export default async function EditCheckInPage({
   if (!latest) notFound();
 
   return (
-    <AppShell title={`Edit Check-in — ${player.name}`}>
+    <AppShell title={`Edit Check-in — ${player.name}`} userRole={user?.role} userName={user?.name}>
       <div className="mx-auto max-w-lg">
         <Link
           href={`/players/${player.id}`}

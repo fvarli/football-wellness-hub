@@ -35,6 +35,7 @@ const navSections: NavSection[] = [
       { label: "Players", href: "/players", icon: Users },
       { label: "Wellness", href: "/wellness", icon: Heart },
       { label: "Workload", href: "/workload", icon: Activity },
+      { label: "Submit Check-in", href: "/check-in", icon: ClipboardCheck },
       { label: "Injury Risk", href: "/injury-risk", icon: AlertTriangle },
       { label: "Reports", href: "/reports", icon: BarChart3 },
     ],

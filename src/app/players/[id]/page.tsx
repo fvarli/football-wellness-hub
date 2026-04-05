@@ -8,6 +8,7 @@ import WellnessBadge from "@/components/wellness-badge";
 import BodyMapSummary from "@/components/body-map-summary";
 import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
 import { getPlayerById, getWellnessForPlayer, getLatestWellness, getRiskSnapshot } from "@/lib/data/service";
+import { getCurrentUser } from "@/lib/auth-utils";
 import { WELLNESS_METRICS } from "@/lib/types";
 
 const statusStyles: Record<string, string> = {
@@ -28,6 +29,7 @@ export default async function PlayerDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await getCurrentUser();
   const { id } = await params;
   const player = await getPlayerById(id);
 
@@ -39,7 +41,7 @@ export default async function PlayerDetailPage({
   const snap = await getRiskSnapshot(player.id);
 
   return (
-    <AppShell title={player.name}>
+    <AppShell title={player.name} userRole={user?.role} userName={user?.name}>
       <Link
         href="/players"
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"

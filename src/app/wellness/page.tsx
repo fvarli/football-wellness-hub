@@ -2,6 +2,7 @@ import Link from "next/link";
 import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
 import { getAllLatestWellness } from "@/lib/data/service";
+import { getCurrentUser } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 import { WELLNESS_METRICS } from "@/lib/types";
@@ -20,10 +21,11 @@ function cellColor(value: number): string {
 }
 
 export default async function WellnessOverviewPage() {
+  const user = await getCurrentUser();
   const data = await getAllLatestWellness();
 
   return (
-    <AppShell title="Wellness Overview">
+    <AppShell title="Wellness Overview" userRole={user?.role} userName={user?.name}>
       <div className="mb-5">
         <p className="text-sm text-muted">
           Latest wellness scores for all players. Color-coded for quick scanning.
