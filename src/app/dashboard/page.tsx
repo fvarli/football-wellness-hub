@@ -10,6 +10,8 @@ import StatCard from "@/components/stat-card";
 import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
 import { getAllRiskSnapshotsSorted, MOCK_AS_OF } from "@/lib/data/service";
 import { getCurrentUser } from "@/lib/auth-utils";
+import { generateSquadInsights } from "@/lib/squad-insights";
+import SquadInsightsCard from "@/components/squad-insights-card";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +27,11 @@ export default async function DashboardPage() {
     ? (withWellness.reduce((sum, s) => sum + s.latestWellnessScore!, 0) / withWellness.length).toFixed(1)
     : "—";
   const totalFlagged = sorted.filter((s) => s.sorenessFlags.length > 0).length;
+
+  const squadInsights = generateSquadInsights(sorted);
+  const playerNames: Record<string, string> = Object.fromEntries(
+    sorted.map((s) => [s.playerId, s.player.name]),
+  );
 
   return (
     <AppShell title="Dashboard" userRole={user?.role} userName={user?.name}>
@@ -70,6 +77,11 @@ export default async function DashboardPage() {
           iconBg="bg-warning-light"
           iconColor="text-warning"
         />
+      </div>
+
+      {/* Squad Insights */}
+      <div className="mt-6">
+        <SquadInsightsCard insights={squadInsights} playerNames={playerNames} />
       </div>
 
       <div className="mt-6 rounded-xl border border-card-border bg-card-bg overflow-x-auto">

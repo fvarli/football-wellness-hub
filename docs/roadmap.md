@@ -202,22 +202,46 @@
 
 ### Interpreted Trend Insights
 - Pure function `generatePlayerInsights()` in `src/lib/insights.ts`
-- 7 rule-based insight types: wellness trend, low/high wellness, load spike, peak load, combined decline+load, soreness flags, ACWR range
+- 12 deterministic insight rules: wellness trend (up/down), low/high wellness score, load spike, peak load, combined decline+load, soreness flags (many/none), ACWR range (high/optimal/low)
 - Each insight typed as positive (green), warning (orange), or neutral (gray)
 - Displayed as compact colored rows below the sparklines in the Trends card
 - Empty state: hidden when no insights generated; "No data" when zero entries + sessions
 - 12 unit tests covering every rule and edge case
 - 142 unit tests + 7 integration tests total
 
+### Squad-Level Insights on Dashboard
+- Pure function `generateSquadInsights()` in `src/lib/squad-insights.ts`
+- 7 squad-level rules: declining wellness, high ACWR, 3+ soreness flags, low wellness, no recent data, overloaded+fatigued, all-clear
+- Each insight carries `playerIds[]` for linking to player detail pages
+- `SquadInsightsCard` component renders insights with clickable player name links
+- Placed between stat cards and risk table on dashboard
+- 14 unit tests covering all rules, boundaries, and edge cases
+- No new DB queries — reuses existing `getAllRiskSnapshotsSorted()` data
+
+### Prisma Runtime Fix + Player Analytics Page
+- Fixed Prisma/Turbopack `node:path` runtime error: reverted from custom `src/generated/prisma` output to standard `@prisma/client` import path
+- Removed stale `src/generated/` directory and all imports referencing it
+- Added `serverExternalPackages` to next.config.ts for server-only deps
+- Prisma generator changed from `prisma-client` to `prisma-client-js` (standard provider)
+- New route: `/players/[id]/analytics` with wellness + load trend charts
+- `AnalyticsChart` component with 7d/14d/30d/All time window controls
+- Sparkline component made responsive with `viewBox` instead of fixed `width`
+- Insight summary ("What stands out") reuses `generatePlayerInsights()` from `insights.ts`
+- "View Analytics" link on player detail header card
+- Access control: same as player detail (coach/admin + own player)
+- Turbopack remains enabled — no webpack fallback needed
+
 ## Current Stable Baseline
 
-The application is a **full-stack application with complete authentication, RBAC, and PostgreSQL persistence**:
+The application is a **full-stack application with complete authentication, RBAC, analytics, and PostgreSQL persistence**:
 - All major UI screens built with session-aware navigation
 - Auth.js v5 authentication with credentials provider and JWT sessions
 - Role-based access control: admin, coach, player — enforced via middleware + API routes
+- Dashboard shows stat cards, squad-level insights with linked player names, and risk table
 - Player detail shows risk profile, trend sparklines + interpreted insights, latest check-in, body soreness, recent sessions, wellness history
+- Player analytics page with interactive charts and time window controls
 - Coach/admin player picker on both check-in and session logging pages
-- Data persisted in PostgreSQL via Prisma 7
+- Data persisted in PostgreSQL via Prisma 7 (standard @prisma/client import)
 - Wellness check-in: POST creates, PUT updates, identity from session
 - Training session creation restricted to coach/admin with player dropdown
 - One check-in per player per day enforced
@@ -225,14 +249,13 @@ The application is a **full-stack application with complete authentication, RBAC
 - Body map selections stored as normalized child rows
 - Risk computation (ACWR, wellness trend, soreness flags) from persisted data
 - Polished responsive design
-- 142 unit tests + 7 integration tests, all passing
+- 156 unit tests + 7 integration tests, all passing
 
 All four checks pass: unit tests, integration tests, build, lint.
 
 ## Next Likely Milestones
 
-### Analytics and Trends
-- Wellness trend charts per player over time
+### Advanced Analytics
 - Body map heatmap history (which muscles are repeatedly sore)
 - Squad-level trend visualization
 - Exportable reports

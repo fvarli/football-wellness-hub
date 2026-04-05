@@ -115,6 +115,14 @@ export default async function PlayerDetailPage({
             </div>
           )}
         </div>
+        <div className="mt-3 flex justify-end">
+          <Link
+            href={`/players/${player.id}/analytics`}
+            className="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-muted hover:bg-gray-200 hover:text-foreground transition-colors"
+          >
+            View Analytics
+          </Link>
+        </div>
       </div>
 
       {/* Risk summary card */}

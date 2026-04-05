@@ -19,6 +19,7 @@ football-wellness-hub/
       check-in/page.tsx        Player daily check-in (session-derived playerId)
       login/page.tsx           Credentials login page
       players/[id]/edit-checkin/page.tsx  Edit latest wellness check-in (pre-filled form, PUT)
+      players/[id]/analytics/page.tsx    Player analytics: charts + time controls + insights
       api/
         auth/[...nextauth]/route.ts  Auth.js GET/POST handlers
         wellness/check-in/route.ts   POST — create, PUT — update (auth-protected)
@@ -38,6 +39,8 @@ football-wellness-hub/
       player-picker-session.tsx Coach/admin player selector + session form wrapper
       players-list.tsx         Client-side player search (receives data from server component)
       sparkline.tsx            Zero-dependency SVG sparkline for inline trend charts
+      squad-insights-card.tsx  Dashboard squad insights card with linked player names
+      analytics-chart.tsx      Interactive chart with time window controls (7d/14d/30d/All)
       body-map.tsx             Interactive body map (selection state, picker, list)
       body-map-summary.tsx     Read-only body map summary for detail pages
       male-front-svg.tsx       Anatomical male front SVG with clickable regions
@@ -54,7 +57,8 @@ football-wellness-hub/
         service.ts             Async data access service — reads + writes via Prisma
       mock-data.ts             Seed data arrays (used by prisma/seed.ts only)
       risk.ts                  Pure computation: ACWR, wellness trend, soreness flags, risk level
-      insights.ts              Deterministic insight generator from player data
+      insights.ts              Deterministic player-level insight generator
+      squad-insights.ts        Deterministic squad-level insight generator
     test/
       setup.ts                 Vitest setup (jest-dom matchers)
       vitest.d.ts              Type declarations for Vitest globals + jest-dom
@@ -72,6 +76,7 @@ football-wellness-hub/
       session-form.test.tsx    Session form submit flow tests (6 cases)
       auth-api.test.ts         Auth/RBAC logic tests (13 cases)
       insights.test.ts         Player insight generator tests (12 cases)
+      squad-insights.test.ts   Squad insight generator tests (14 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config

@@ -64,7 +64,7 @@ export default function Sparkline({
           {currentValue && <span className="text-sm font-bold text-foreground">{currentValue}</span>}
         </div>
       )}
-      <svg width={width} height={height} className="overflow-visible">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full overflow-visible" style={{ maxHeight: height }}>
         {filled && (
           <path d={areaPath} fill={color} opacity={0.1} />
         )}
