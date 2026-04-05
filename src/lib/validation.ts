@@ -266,3 +266,55 @@ export function validateTrainingSession(
     },
   };
 }
+
+// ── Bulk training session validation ──
+
+export function validateBulkTrainingSessions(
+  input: unknown,
+): ValidationResult<ValidatedTrainingSession[]> {
+  if (typeof input !== "object" || input === null) {
+    return { ok: false, errors: [{ message: "Input must be an object" }] };
+  }
+
+  const raw = input as Record<string, unknown>;
+  const errors: WriteError[] = [];
+
+  // Validate playerIds
+  if (!Array.isArray(raw.playerIds)) {
+    return { ok: false, errors: [{ field: "playerIds", message: "playerIds must be an array" }] };
+  }
+
+  if (raw.playerIds.length === 0) {
+    return { ok: false, errors: [{ field: "playerIds", message: "playerIds must not be empty" }] };
+  }
+
+  for (let i = 0; i < raw.playerIds.length; i++) {
+    const pid = raw.playerIds[i];
+    if (typeof pid !== "string" || pid.trim().length === 0) {
+      errors.push({ field: `playerIds[${i}]`, message: "each playerId must be a non-empty string" });
+    }
+  }
+
+  if (errors.length > 0) {
+    return { ok: false, errors };
+  }
+
+  const playerIds = raw.playerIds as string[];
+  const uniqueIds = new Set(playerIds);
+  if (uniqueIds.size !== playerIds.length) {
+    return { ok: false, errors: [{ field: "playerIds", message: "playerIds must not contain duplicates" }] };
+  }
+
+  // Validate shared fields using the first player — all share the same fields
+  const sharedFields = { date: raw.date, type: raw.type, durationMinutes: raw.durationMinutes, rpe: raw.rpe, notes: raw.notes };
+  const probe = validateTrainingSession({ playerId: playerIds[0], ...sharedFields });
+  if (!probe.ok) return probe;
+
+  // Build validated array for all players
+  const validated: ValidatedTrainingSession[] = playerIds.map((pid) => ({
+    ...probe.data,
+    playerId: pid,
+  }));
+
+  return { ok: true, data: validated };
+}

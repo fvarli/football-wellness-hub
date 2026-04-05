@@ -72,7 +72,7 @@ Client forms (check-in, log session)
 | `/players/[id]/edit-checkin` | Coach, Admin, Own player | Edit latest wellness check-in |
 | `/wellness` | Coach, Admin | Squad wellness overview |
 | `/workload` | Coach, Admin | Training session list |
-| `/workload/log` | Coach, Admin | Log a training session — player picker + type, duration, RPE |
+| `/workload/log` | Coach, Admin | Log training sessions — single (player picker) or bulk (multi-select) mode |
 | `/check-in` | Player: own check-in; Coach/Admin: player picker | Daily wellness check-in |
 
 ## API Routes
@@ -85,6 +85,7 @@ Client forms (check-in, log session)
 | `/api/sessions` | POST | Coach/Admin | Log training session |
 | `/api/sessions` | PUT | Coach/Admin | Update training session (requires sessionId) |
 | `/api/sessions` | DELETE | Coach/Admin | Delete training session (requires sessionId) |
+| `/api/sessions/bulk` | POST | Coach/Admin | Bulk create training sessions (one per selected player) |
 
 ## Authorization Rules
 
@@ -98,8 +99,8 @@ Client forms (check-in, log session)
 |---|---|
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm test` | Unit tests (161 tests, no DB required) |
-| `npm run test:integration` | Integration tests (11 tests, requires DB) |
+| `npm test` | Unit tests (180 tests, no DB required) |
+| `npm run test:integration` | Integration tests (13 tests, requires DB) |
 | `npm run test:all` | Both test suites |
 | `npm run lint` | Lint check |
 | `npm run db:seed` | Seed database with demo data + users |

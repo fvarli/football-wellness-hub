@@ -28,6 +28,7 @@ import { calculatePlayerRiskSnapshot } from "@/lib/risk";
 import {
   validateWellnessCheckIn,
   validateTrainingSession,
+  validateBulkTrainingSessions,
   type ValidationResult,
   type WriteError,
   type ValidatedWellnessCheckIn,
@@ -383,6 +384,35 @@ export async function deleteTrainingSession(
 
   await prisma.trainingSession.delete({ where: { id: sessionId } });
   return { ok: true, data: { id: sessionId } };
+}
+
+/**
+ * Create multiple training sessions atomically (one per player, shared fields).
+ * Validates all rows before any mutation. Uses a single transaction.
+ */
+export async function submitBulkTrainingSessions(
+  input: unknown,
+): Promise<ValidationResult<TrainingSession[]>> {
+  const result = validateBulkTrainingSessions(input);
+  if (!result.ok) return result;
+
+  const sessions = await prisma.$transaction(
+    result.data.map((d) =>
+      prisma.trainingSession.create({
+        data: {
+          playerId: d.playerId,
+          date: d.date,
+          type: d.type,
+          durationMinutes: d.durationMinutes,
+          rpe: d.rpe,
+          sessionLoad: d.sessionLoad,
+          notes: d.notes ?? null,
+        },
+      }),
+    ),
+  );
+
+  return { ok: true, data: sessions.map(mapSession) };
 }
 
 // Re-export validation types for API routes

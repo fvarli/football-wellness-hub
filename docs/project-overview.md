@@ -34,7 +34,7 @@ Replace spreadsheet-based wellness tracking with a purpose-built tool that:
 | Player analytics | `/players/[id]/analytics` | Wellness + load trend charts with 7d/14d/30d/All range controls, insight summary |
 | Wellness overview | `/wellness` | Squad-wide color-coded wellness table |
 | Workload | `/workload` | Training session list with summary cards, edit/delete actions per session. Coach/admin only. |
-| Log Session | `/workload/log` | Player picker + session form (type, duration, RPE). Coach/admin only. |
+| Log Session | `/workload/log` | Single (player picker) or bulk (multi-select) session logging. Coach/admin only. |
 | Edit Session | `/workload/edit/[sessionId]` | Pre-filled session form for updating an existing training session (PUT). Coach/admin only. |
 | Daily check-in | `/check-in` | 6-metric wellness form + anatomical body soreness map |
 | Settings | `/settings` | Placeholder |

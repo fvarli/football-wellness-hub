@@ -245,6 +245,16 @@
 - 1 new component test file for SessionActions (4 cases)
 - 161 unit tests + 11 integration tests, all passing
 
+### Batch Session Logging
+- `validateBulkTrainingSessions(input)` in validation.ts — validates playerIds (non-empty, no duplicates, no blanks) + shared fields via existing `validateTrainingSession`
+- `submitBulkTrainingSessions(input)` in service.ts — single Prisma `$transaction` for atomicity
+- `POST /api/sessions/bulk` — coach/admin only, returns `{ sessions: TrainingSession[] }`
+- `SessionLogSwitcher` component: Single/Bulk mode toggle on `/workload/log`
+- `BulkSessionForm` component: multi-player checkboxes (select all/deselect all), shared fields, per-player + total load preview, success screen with capped player names (+N more)
+- Single-session logging preserved unchanged via `PlayerPickerSession`
+- 10 new validation tests, 8 new component tests, 2 new integration tests
+- 180 unit tests + 13 integration tests, all passing
+
 ## Current Stable Baseline
 
 The application is a **full-stack application with complete authentication, RBAC, full CRUD, analytics, and PostgreSQL persistence**:
@@ -258,13 +268,14 @@ The application is a **full-stack application with complete authentication, RBAC
 - Data persisted in PostgreSQL via Prisma 7 (standard @prisma/client import)
 - Wellness check-in: POST creates, PUT updates, identity from session
 - Training sessions: full CRUD (POST create, PUT update, DELETE) restricted to coach/admin
+- Bulk session logging: create sessions for multiple players at once with shared fields
 - One check-in per player per day enforced
 - Wellness edit UI at `/players/[id]/edit-checkin`
 - Session edit UI at `/workload/edit/[sessionId]`
 - Body map selections stored as normalized child rows
 - Risk computation (ACWR, wellness trend, soreness flags) from persisted data
 - Polished responsive design
-- 161 unit tests + 11 integration tests, all passing
+- 180 unit tests + 13 integration tests, all passing
 
 All four checks pass: unit tests, integration tests, build, lint.
 

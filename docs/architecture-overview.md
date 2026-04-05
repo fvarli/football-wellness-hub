@@ -25,6 +25,7 @@ football-wellness-hub/
         auth/[...nextauth]/route.ts  Auth.js GET/POST handlers
         wellness/check-in/route.ts   POST — create, PUT — update (auth-protected)
         sessions/route.ts            POST/PUT/DELETE — session CRUD (coach/admin only)
+        sessions/bulk/route.ts       POST — bulk create sessions (coach/admin only)
     middleware.ts                    Edge-safe route protection via auth.config.ts (no Prisma/bcrypt)
     components/
       app-shell.tsx            Layout wrapper (sidebar + header + content)
@@ -37,6 +38,8 @@ football-wellness-hub/
       wellness-form.tsx        Full check-in form (metrics + body map + notes)
       session-form.tsx         Training session form (type + duration + RPE) — create + edit modes
       session-actions.tsx      Edit link + delete button with confirmation flow
+      session-log-switcher.tsx Single/Bulk mode toggle wrapper for session logging
+      bulk-session-form.tsx    Bulk session form with multi-player checkboxes + shared fields
       player-picker-checkin.tsx  Coach/admin player selector + wellness form wrapper
       player-picker-session.tsx Coach/admin player selector + session form wrapper
       players-list.tsx         Client-side player search (receives data from server component)
@@ -72,12 +75,15 @@ football-wellness-hub/
       risk-badge.test.tsx      Risk badge component tests (9 cases)
       validation.test.ts       Input validation tests (18 cases)
       service-writes.test.ts   Write contract unit tests (9 cases)
-      integration/
-        setup.ts               Integration test setup
-        wellness-writes.test.ts  Prisma-backed write integration tests (11 cases, requires DB)
       wellness-form.test.tsx   Wellness form submit flow tests (8 cases)
       session-form.test.tsx    Session form submit flow tests (6 cases)
       session-actions.test.tsx Session actions component tests (4 cases)
+      bulk-validation.test.ts  Bulk session validation tests (10 cases)
+      bulk-session-form.test.tsx Bulk session form component tests (8 cases)
+      integration/
+        setup.ts               Integration test setup
+        wellness-writes.test.ts  Prisma-backed write integration tests (11 cases, requires DB)
+        session-bulk.test.ts   Bulk session creation integration tests (2 cases, requires DB)
       auth-api.test.ts         Auth/RBAC logic tests (13 cases)
       insights.test.ts         Player insight generator tests (12 cases)
       squad-insights.test.ts   Squad insight generator tests (14 cases)
@@ -143,8 +149,8 @@ BodyMap component
 
 | Command | Suite | DB Required | Config |
 |---|---|---|---|
-| `npm test` | Unit tests (161) | No | `vitest.config.ts` (jsdom, excludes `integration/`) |
-| `npm run test:integration` | Integration tests (11) | Yes | `vitest.integration.config.ts` (node, `.env.test`) |
+| `npm test` | Unit tests (180) | No | `vitest.config.ts` (jsdom, excludes `integration/`) |
+| `npm run test:integration` | Integration tests (13) | Yes | `vitest.integration.config.ts` (node, `.env.test`) |
 | `npm run test:all` | Both suites | Yes | Runs sequentially |
 
 SVG components are mocked in tests to avoid rendering massive path data. Mocks provide simple clickable buttons with the same `onRegionClick` / `selections` / `getLabel` interface.
