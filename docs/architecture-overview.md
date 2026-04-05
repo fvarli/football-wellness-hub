@@ -24,7 +24,7 @@ football-wellness-hub/
         auth/[...nextauth]/route.ts  Auth.js GET/POST handlers
         wellness/check-in/route.ts   POST — create, PUT — update (auth-protected)
         sessions/route.ts            POST — log session (coach/admin only)
-    middleware.ts                    Route protection: redirect unauthenticated, restrict player access
+    middleware.ts                    Edge-safe route protection via auth.config.ts (no Prisma/bcrypt)
     components/
       app-shell.tsx            Layout wrapper (sidebar + header + content)
       sidebar.tsx              Navigation with role-aware sections
@@ -47,7 +47,8 @@ football-wellness-hub/
       male-back-svg.tsx        Anatomical male back SVG with clickable regions
     lib/
       types.ts                 Shared TypeScript types
-      auth.ts                  Auth.js v5 config (credentials provider, JWT callbacks)
+      auth.config.ts           Auth.js Edge-safe config (JWT callbacks, authorized check — used by middleware)
+      auth.ts                  Auth.js Node-only config (extends auth.config.ts with Credentials authorize + Prisma + bcrypt)
       auth-types.ts            AppUser type augmentation for sessions
       auth-utils.ts            Server-side auth helpers (getCurrentUser, requireUser, hasRole, canAccessPlayer)
       body-regions.ts          Canonical muscle region registry + view mapping

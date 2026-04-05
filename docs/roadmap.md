@@ -218,11 +218,13 @@
 - 14 unit tests covering all rules, boundaries, and edge cases
 - No new DB queries — reuses existing `getAllRiskSnapshotsSorted()` data
 
-### Prisma Runtime Fix + Player Analytics Page
-- Fixed Prisma/Turbopack `node:path` runtime error: reverted from custom `src/generated/prisma` output to standard `@prisma/client` import path
-- Removed stale `src/generated/` directory and all imports referencing it
-- Added `serverExternalPackages` to next.config.ts for server-only deps
-- Prisma generator changed from `prisma-client` to `prisma-client-js` (standard provider)
+### Prisma Runtime Fix + Edge Runtime Fix + Player Analytics Page
+- Fixed Prisma/Turbopack `node:path` runtime error: reverted to standard `@prisma/client` import path
+- Fixed Edge runtime `crypto` error: split auth into Edge-safe config (`auth.config.ts`) and Node-only logic (`auth.ts`)
+- Middleware now imports only `auth.config.ts` — no Prisma, bcrypt, or Node crypto in Edge
+- Authorization logic (RBAC, player restrictions) moved into `authorized()` callback in auth.config.ts (Edge-safe)
+- `serverExternalPackages` added to next.config.ts for server-only deps
+- Prisma generator changed to `prisma-client-js` (standard provider)
 - New route: `/players/[id]/analytics` with wellness + load trend charts
 - `AnalyticsChart` component with 7d/14d/30d/All time window controls
 - Sparkline component made responsive with `viewBox` instead of fixed `width`

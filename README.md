@@ -39,7 +39,7 @@ Open [http://localhost:3000](http://localhost:3000). You'll be redirected to `/l
 | Framework | Next.js 16 (App Router, Turbopack) |
 | Language | TypeScript 5 |
 | Database | PostgreSQL via Prisma 7 |
-| Auth | Auth.js v5 (credentials provider, JWT sessions) |
+| Auth | Auth.js v5 (credentials, JWT sessions, Edge-safe middleware) |
 | UI | React 19, Tailwind CSS 4, Lucide Icons |
 | Testing | Vitest 4, React Testing Library |
 

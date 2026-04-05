@@ -1,9 +1,24 @@
+/**
+ * Auth.js — Node runtime only.
+ *
+ * This file extends the Edge-safe config from auth.config.ts with
+ * the Credentials authorize() function that requires Prisma + bcrypt.
+ *
+ * Only import this from:
+ * - API route handlers (Node runtime)
+ * - Server components (Node runtime)
+ * - auth-utils.ts (used by server components)
+ *
+ * Do NOT import this from middleware.ts — use auth.config.ts instead.
+ */
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compareSync } from "bcryptjs";
 import { prisma } from "./db";
+import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -32,27 +47,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.role = (user as { role: string }).role;
-        token.playerId = (user as { playerId: string | null }).playerId;
-      }
-      return token;
-    },
-    session({ session, token }) {
-      if (session.user) {
-        (session.user as { id: string }).id = token.sub!;
-        (session.user as { role: string }).role = token.role as string;
-        (session.user as { playerId: string | null }).playerId = token.playerId as string | null;
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/login",
-  },
-  session: {
-    strategy: "jwt",
-  },
 });
