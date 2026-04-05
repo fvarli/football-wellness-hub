@@ -46,9 +46,12 @@ npm run db:seed
 
 | Script | Command | Purpose |
 |---|---|---|
-| `db:migrate` | `npx prisma migrate dev` | Apply schema migrations |
+| `db:migrate` | `npx prisma migrate dev` | Apply schema migrations (dev DB) |
 | `db:seed` | `npx tsx prisma/seed.ts` | Populate database from mock data |
 | `db:reset` | `npx prisma migrate reset --force` | Drop + recreate + re-seed |
+| `db:test:setup` | Push schema + seed to test DB | Uses `.env.test` DATABASE_URL |
+| `test:integration` | `vitest --config vitest.integration.config.ts` | Run DB-backed tests |
+| `test:all` | Unit + integration tests | Runs sequentially |
 
 ## Stack
 

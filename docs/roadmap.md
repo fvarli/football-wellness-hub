@@ -130,23 +130,44 @@
 - README.md rewritten with full setup, routes, scripts, architecture
 - 114 unit tests + 6 integration tests
 
+### Milestone 16 — Wellness Edit UI
+- `/players/[id]/edit-checkin` page — pre-fills wellness form from latest entry data
+- `WellnessForm` supports `mode="create"` (POST) and `mode="edit"` (PUT) via `initialEntry` prop
+- Edit mode: pre-fills all 6 metrics, notes, body map selections; body map section auto-opens if selections exist
+- Edit mode: sends PUT with `entryId`; success shows "Check-in Updated" with "Back to Player" button
+- Player detail page: "Edit" link on the latest check-in card
+- 3 new unit tests: pre-fill verification, PUT method + entryId sent, edit-mode success UI
+- Integration tests ready (6 cases, require running PostgreSQL with `npm run test:integration`)
+- 117 unit tests across 9 test files
+
+### Milestone 17 — Integration Test Execution + DB Hardening
+- Dedicated test PostgreSQL via Docker (port 5555, separate from dev)
+- `.env.test` for test database connection
+- `npm run db:test:setup` — pushes schema + seeds test DB in one command
+- `npm run test:integration` — 7 DB-backed tests (node environment, loads `.env.test`)
+- `npm run test:all` — runs unit tests then integration tests sequentially
+- Prisma seed script updated for Prisma 7 adapter pattern
+- Integration tests cover: create + bodyMap readable, duplicate POST rejection, update + bodyMap replacement, not-found rejection, cross-player rejection, training session create, risk reads updated data
+- All 4 checks pass: `npm test` (117), `npm run test:integration` (7), `npm run build`, `npm run lint`
+
 ## Current Stable Baseline
 
-The application is a **full-stack prototype with PostgreSQL persistence and wellness update flow**:
+The application is a **full-stack prototype with complete wellness CRUD, PostgreSQL persistence, and verified integration tests**:
 - All major UI screens built and navigable
 - Data persisted in PostgreSQL via Prisma 7
 - Wellness check-in: POST creates, PUT updates (body map child rows replaced in transaction)
 - Training session creation via validated POST route
 - One check-in per player per day enforced (POST rejects, PUT updates)
+- Wellness edit UI at `/players/[id]/edit-checkin` with pre-filled form
 - Body map selections stored as normalized child rows, assembled on read
 - Risk computation (ACWR, wellness trend, soreness flags) computed from persisted data
 - Risk data displayed on dashboard, player list, and player detail pages
 - Input validation with regionKey verification against canonical body-regions registry
 - Polished responsive design
-- 114 unit tests (no DB required) + 6 integration tests (requires DB)
-- Database seeded from mock data for 8 players
+- 117 unit tests + 7 integration tests, all passing
+- Dedicated test database via Docker with repeatable setup
 
-All code builds, lints, and unit tests pass cleanly.
+All four checks pass: unit tests, integration tests, build, lint.
 
 ## Next Likely Milestones
 

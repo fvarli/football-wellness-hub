@@ -55,6 +55,7 @@ Client forms (check-in, log session)
 | `/dashboard` | Squad risk overview with ACWR, wellness, soreness flags |
 | `/players` | Player roster with search, risk badges, wellness scores |
 | `/players/[id]` | Player detail: risk profile, check-in, body soreness, history |
+| `/players/[id]/edit-checkin` | Edit latest wellness check-in (pre-filled form, PUT) |
 | `/wellness` | Squad-wide wellness overview table |
 | `/workload` | Training session list with load metrics |
 | `/workload/log` | Log a training session (type, duration, RPE) |
@@ -74,20 +75,50 @@ Client forms (check-in, log session)
 |---|---|
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm test` | Unit tests (no DB required) |
-| `npm run test:integration` | Integration tests (requires DB) |
+| `npm test` | Unit tests (117 tests, no DB required) |
+| `npm run test:integration` | Integration tests (7 tests, requires test DB) |
+| `npm run test:all` | Run both unit and integration tests |
 | `npm run lint` | Lint check |
-| `npm run db:migrate` | Apply database migrations |
+| `npm run db:migrate` | Apply database migrations (dev DB) |
 | `npm run db:seed` | Seed database with demo data |
 | `npm run db:reset` | Drop + recreate + re-seed |
+| `npm run db:test:setup` | Push schema + seed to the test database |
 
 ## Environment Variables
 
-| Variable | Required | Description |
+| Variable | File | Description |
 |---|---|---|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DATABASE_URL` | `.env` | Dev/production PostgreSQL connection string |
+| `DATABASE_URL` | `.env.test` | Test database connection string |
 
-Example: `postgresql://postgres:postgres@localhost:5432/football_wellness_hub?schema=public`
+## Integration Tests
+
+Integration tests run against a dedicated test PostgreSQL database, separate from dev.
+
+### Quick setup with Docker
+
+```bash
+# Start a test PostgreSQL container
+docker run -d --name fwh-test-pg \
+  -e POSTGRES_USER=testuser \
+  -e POSTGRES_PASSWORD=testpass \
+  -e POSTGRES_DB=fwh_test \
+  -p 5555:5432 postgres:16-alpine
+
+# Push schema + seed data
+npm run db:test:setup
+
+# Run integration tests
+npm run test:integration
+
+# Run all tests (unit + integration)
+npm run test:all
+```
+
+The `.env.test` file configures the test database connection:
+```
+DATABASE_URL="postgresql://testuser:testpass@localhost:5555/fwh_test?schema=public"
+```
 
 ## Documentation
 

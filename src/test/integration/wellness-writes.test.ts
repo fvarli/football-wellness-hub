@@ -1,8 +1,9 @@
 /**
  * Integration tests for wellness write operations.
  *
- * Requires a running PostgreSQL with migrated + seeded test database.
- * Run: npm run test:integration
+ * Requires: test PostgreSQL running with seeded data.
+ * Setup:    See README.md "Integration Tests" section.
+ * Run:      npm run test:integration
  */
 import { describe, it, expect } from "vitest";
 import {
@@ -10,13 +11,20 @@ import {
   updateWellnessCheckIn,
   getWellnessForPlayer,
   getLatestWellness,
+  submitTrainingSession,
+  getSessionsForPlayer,
+  getRiskSnapshot,
 } from "@/lib/data/service";
 
-const TEST_PLAYER = "1"; // Emre Yılmaz (from seed data)
+const TEST_PLAYER = "1"; // Emre Yilmaz (from seed)
+
+function uniqueDate(prefix: string) {
+  return `${prefix}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}`;
+}
 
 describe("submitWellnessCheckIn (integration)", () => {
-  it("creates an entry and makes it readable", async () => {
-    const date = `2099-01-${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}`;
+  it("creates an entry with bodyMap and makes it readable", async () => {
+    const date = uniqueDate("2099-01");
     const result = await submitWellnessCheckIn({
       playerId: TEST_PLAYER,
       date,
@@ -38,8 +46,8 @@ describe("submitWellnessCheckIn (integration)", () => {
     expect(found!.bodyMap).toHaveLength(1);
   });
 
-  it("rejects duplicate same-day submission", async () => {
-    const date = "2099-12-25";
+  it("rejects duplicate same-day POST", async () => {
+    const date = uniqueDate("2099-12");
     const base = {
       playerId: TEST_PLAYER, date,
       fatigue: 7, soreness: 7, sleepQuality: 7, recovery: 7, stress: 7, mood: 7,
@@ -58,8 +66,8 @@ describe("submitWellnessCheckIn (integration)", () => {
 });
 
 describe("updateWellnessCheckIn (integration)", () => {
-  it("updates metrics and replaces body map selections", async () => {
-    const date = `2099-02-${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}`;
+  it("updates metrics and replaces bodyMap child rows", async () => {
+    const date = uniqueDate("2099-02");
     const create = await submitWellnessCheckIn({
       playerId: TEST_PLAYER, date,
       fatigue: 5, soreness: 5, sleepQuality: 5, recovery: 5, stress: 5, mood: 5,
@@ -68,9 +76,7 @@ describe("updateWellnessCheckIn (integration)", () => {
     expect(create.ok).toBe(true);
     if (!create.ok) return;
 
-    const entryId = create.data.id;
-
-    const update = await updateWellnessCheckIn(entryId, {
+    const update = await updateWellnessCheckIn(create.data.id, {
       playerId: TEST_PLAYER, date,
       fatigue: 8, soreness: 8, sleepQuality: 8, recovery: 8, stress: 8, mood: 8,
       bodyMap: [
@@ -101,7 +107,7 @@ describe("updateWellnessCheckIn (integration)", () => {
   });
 
   it("rejects cross-player update", async () => {
-    const date = `2099-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}`;
+    const date = uniqueDate("2099-03");
     const create = await submitWellnessCheckIn({
       playerId: TEST_PLAYER, date,
       fatigue: 7, soreness: 7, sleepQuality: 7, recovery: 7, stress: 7, mood: 7,
@@ -120,9 +126,30 @@ describe("updateWellnessCheckIn (integration)", () => {
   });
 });
 
+describe("submitTrainingSession (integration)", () => {
+  it("creates a session with derived sessionLoad", async () => {
+    const before = (await getSessionsForPlayer(TEST_PLAYER)).length;
+
+    const result = await submitTrainingSession({
+      playerId: TEST_PLAYER,
+      date: uniqueDate("2099-05"),
+      type: "training",
+      durationMinutes: 60,
+      rpe: 7,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.data.sessionLoad).toBe(420);
+    const after = (await getSessionsForPlayer(TEST_PLAYER)).length;
+    expect(after).toBe(before + 1);
+  });
+});
+
 describe("risk reads updated data (integration)", () => {
-  it("latest wellness reflects the update", async () => {
-    const date = `2099-04-${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}`;
+  it("risk snapshot reflects the latest persisted wellness", async () => {
+    const date = uniqueDate("2099-04");
     const create = await submitWellnessCheckIn({
       playerId: TEST_PLAYER, date,
       fatigue: 3, soreness: 3, sleepQuality: 3, recovery: 3, stress: 3, mood: 3,
@@ -136,9 +163,13 @@ describe("risk reads updated data (integration)", () => {
     });
 
     const latest = await getLatestWellness(TEST_PLAYER);
-    // The updated entry (with the far-future date) should be the latest
     if (latest && latest.date === date) {
       expect(latest.overallScore).toBe(9);
     }
+
+    // Verify risk snapshot can compute without errors
+    const snap = await getRiskSnapshot(TEST_PLAYER, date);
+    expect(snap.playerId).toBe(TEST_PLAYER);
+    expect(snap.latestWellnessScore).toBeTruthy();
   });
 });
