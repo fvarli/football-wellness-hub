@@ -41,7 +41,7 @@ Navigation groups: **Staff** (dashboard, players, wellness, workload, injury ris
 
 ## Current Maturity
 
-**Full-stack prototype with PostgreSQL persistence.** The UI is functional and polished. Data is stored in PostgreSQL via Prisma 7. API routes handle wellness check-in creation (POST) and update (PUT), plus training session creation (POST), all with full server-side validation. There is no authentication yet — a demo playerId is used for writes.
+**Full-stack application with PostgreSQL persistence and authentication.** Data is stored in PostgreSQL via Prisma 7. Authentication uses Auth.js v5 with credentials provider and JWT sessions. Role-based access control enforces admin/coach/player permissions. API routes derive identity from the authenticated session — no client-supplied playerId is trusted for writes.
 
 ### Tech Stack
 
@@ -52,5 +52,6 @@ Navigation groups: **Staff** (dashboard, players, wellness, workload, injury ris
 | UI | React 19, Tailwind CSS 4 |
 | Icons | Lucide React |
 | Database | PostgreSQL via Prisma 7, @prisma/adapter-pg |
+| Auth | Auth.js v5, credentials provider, JWT sessions |
 | Testing | Vitest 4, React Testing Library, jsdom |
 | Lint | ESLint 9 with next config |

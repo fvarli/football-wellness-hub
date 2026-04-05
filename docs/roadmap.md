@@ -150,32 +150,44 @@
 - Integration tests cover: create + bodyMap readable, duplicate POST rejection, update + bodyMap replacement, not-found rejection, cross-player rejection, training session create, risk reads updated data
 - All 4 checks pass: `npm test` (117), `npm run test:integration` (7), `npm run build`, `npm run lint`
 
+### Milestone 18 — Authentication + RBAC
+- Auth.js v5 with credentials provider and JWT sessions
+- User model with email, hashedPassword, name, role (admin/coach/player), optional playerId link
+- Login page at `/login` with demo accounts
+- Middleware-based route protection: unauthenticated users redirected to login
+- Player role restrictions: can only access own check-in, own player detail, dashboard
+- Coach/admin: full squad access + session logging
+- API routes derive identity from session (no trusted client playerId)
+- Players' playerId forced from session on write routes
+- Training session creation restricted to coach/admin roles
+- Sidebar navigation filtered by role (Staff sections for coach/admin, Player section for players)
+- Sign-out button in header
+- Hardcoded demo playerId removed from all pages
+- Seed script creates 3 demo users (admin, coach, player linked to Emre Yilmaz)
+- All databases switched to local PostgreSQL (Docker removed)
+- 117 unit tests + 7 integration tests, all passing
+
 ## Current Stable Baseline
 
-The application is a **full-stack prototype with complete wellness CRUD, PostgreSQL persistence, and verified integration tests**:
+The application is a **full-stack application with authentication, RBAC, and PostgreSQL persistence**:
 - All major UI screens built and navigable
+- Auth.js v5 authentication with credentials provider
+- Role-based access control: admin, coach, player
 - Data persisted in PostgreSQL via Prisma 7
-- Wellness check-in: POST creates, PUT updates (body map child rows replaced in transaction)
-- Training session creation via validated POST route
-- One check-in per player per day enforced (POST rejects, PUT updates)
-- Wellness edit UI at `/players/[id]/edit-checkin` with pre-filled form
-- Body map selections stored as normalized child rows, assembled on read
-- Risk computation (ACWR, wellness trend, soreness flags) computed from persisted data
+- Wellness check-in: POST creates, PUT updates, identity from session
+- Training session creation restricted to coach/admin
+- One check-in per player per day enforced
+- Wellness edit UI at `/players/[id]/edit-checkin`
+- Body map selections stored as normalized child rows
+- Risk computation (ACWR, wellness trend, soreness flags) from persisted data
 - Risk data displayed on dashboard, player list, and player detail pages
-- Input validation with regionKey verification against canonical body-regions registry
+- Sidebar navigation filtered by user role
 - Polished responsive design
 - 117 unit tests + 7 integration tests, all passing
-- Dedicated test database via Docker with repeatable setup
 
 All four checks pass: unit tests, integration tests, build, lint.
 
 ## Next Likely Milestones
-
-### Authentication and RBAC
-- Login flow (OAuth or credential-based)
-- Role assignment: Admin, Coach, Player
-- Route protection via middleware or layout-level guards
-- Sidebar section visibility based on role
 
 ### Analytics and Trends
 - Wellness trend charts per player over time
@@ -188,22 +200,25 @@ All four checks pass: unit tests, integration tests, build, lint.
 - Configurable risk thresholds and alert rules
 - Push notifications for critical risk changes
 
+### OAuth Providers
+- Add Google/GitHub OAuth alongside credentials
+- Link OAuth accounts to existing users
+
 ## Dependencies and Sequencing
 
 ```
-Authentication / RBAC
-  └── Analytics / Trends
-        └── Advanced Risk Features
+Analytics / Trends
+  └── Advanced Risk Features
 ```
 
-Backend persistence is complete. Authentication is the next blocker for multi-user features.
+Authentication and persistence are complete. Analytics is the next major feature area.
 
 ## Risks and Open Decisions
 
 | Item | Status |
 |---|---|
 | Backend technology | Decided: Next.js API routes + Prisma 7 + PostgreSQL |
-| Auth provider | Not decided. Options: NextAuth.js, Clerk, Auth0, custom. |
+| Auth provider | Decided: Auth.js v5 with credentials. OAuth providers deferred. |
 | Female body map | Deferred. Requires gender/body-type selector in check-in flow. |
-| Real-time features | Not decided. Depends on auth architecture. |
+| Real-time features | Not decided. WebSocket or polling depends on use case. |
 | Mobile native app | Not planned. Responsive web app works on mobile browsers. |

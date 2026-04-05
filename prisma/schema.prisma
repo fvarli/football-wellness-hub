@@ -7,6 +7,23 @@ datasource db {
   provider = "postgresql"
 }
 
+// ── Auth ──
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  hashedPassword String
+  name           String
+  role           String   @default("player") // admin | coach | player
+  playerId       String?  @unique            // links player-role users to their Player record
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  player Player? @relation(fields: [playerId], references: [id])
+}
+
+// ── Domain ──
+
 model Player {
   id        String   @id @default(cuid())
   name      String
@@ -17,6 +34,7 @@ model Player {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user             User?
   wellnessEntries  WellnessEntry[]
   trainingSessions TrainingSession[]
 }

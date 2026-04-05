@@ -1,12 +1,29 @@
+export const dynamic = "force-dynamic";
+
+import { redirect } from "next/navigation";
 import AppShell from "@/components/app-shell";
 import WellnessForm from "@/components/wellness-form";
 import { ClipboardCheck } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth-utils";
 
-// Hardcoded demo player until auth is implemented.
-// In production, playerId comes from the authenticated session.
-const DEMO_PLAYER_ID = "1";
+export default async function CheckInPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
 
-export default function CheckInPage() {
+  // Players submit for themselves; coaches/admins need to select a player (future UI)
+  const playerId = user.playerId;
+  if (!playerId) {
+    return (
+      <AppShell title="Daily Check-in">
+        <div className="mx-auto max-w-lg py-16 text-center">
+          <p className="text-sm text-muted">
+            Check-in is available for player accounts only. Coaches and admins can submit on behalf of a player from the player detail page (coming soon).
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Daily Check-in">
       <div className="mx-auto max-w-lg">
@@ -23,7 +40,7 @@ export default function CheckInPage() {
         </div>
 
         <div className="rounded-xl border border-card-border bg-card-bg p-5">
-          <WellnessForm playerId={DEMO_PLAYER_ID} />
+          <WellnessForm playerId={playerId} playerName={user.name} />
         </div>
       </div>
     </AppShell>

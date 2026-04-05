@@ -16,11 +16,14 @@ football-wellness-hub/
       wellness/page.tsx        Squad wellness overview
       workload/page.tsx        Training session list + workload summary
       workload/log/page.tsx    Training session creation form
-      check-in/page.tsx        Player daily check-in
+      check-in/page.tsx        Player daily check-in (session-derived playerId)
+      login/page.tsx           Credentials login page
       players/[id]/edit-checkin/page.tsx  Edit latest wellness check-in (pre-filled form, PUT)
       api/
-        wellness/check-in/route.ts   POST — create wellness check-in, PUT — update by entryId
-        sessions/route.ts            POST — log training session
+        auth/[...nextauth]/route.ts  Auth.js GET/POST handlers
+        wellness/check-in/route.ts   POST — create, PUT — update (auth-protected)
+        sessions/route.ts            POST — log session (coach/admin only)
+    middleware.ts                    Route protection: redirect unauthenticated, restrict player access
     components/
       app-shell.tsx            Layout wrapper (sidebar + header + content)
       sidebar.tsx              Navigation with role-aware sections
@@ -36,13 +39,16 @@ football-wellness-hub/
       male-front-svg.tsx       Anatomical male front SVG with clickable regions
       male-back-svg.tsx        Anatomical male back SVG with clickable regions
     lib/
-      types.ts                 Shared TypeScript types (Player, WellnessEntry, BodyMapSelection, TrainingSession, PlayerRiskSnapshot)
+      types.ts                 Shared TypeScript types
+      auth.ts                  Auth.js v5 config (credentials provider, JWT callbacks)
+      auth-types.ts            AppUser type augmentation for sessions
+      auth-utils.ts            Server-side auth helpers (getCurrentUser, requireUser, hasRole, canAccessPlayer)
       body-regions.ts          Canonical muscle region registry + view mapping
       validation.ts            Input validation for write operations (pure, no side effects)
       db.ts                    Prisma client singleton (PostgreSQL via @prisma/adapter-pg)
       data/
-        service.ts             Async data access service — reads + writes via Prisma, single import point for pages and API routes
-      mock-data.ts             Seed data arrays (used by prisma/seed.ts, not imported by pages)
+        service.ts             Async data access service — reads + writes via Prisma
+      mock-data.ts             Seed data arrays (used by prisma/seed.ts only)
       risk.ts                  Pure computation: ACWR, wellness trend, soreness flags, risk level
     test/
       setup.ts                 Vitest setup (jest-dom matchers)
@@ -141,7 +147,7 @@ Both mobile and desktop SVG containers render simultaneously in jsdom (no CSS me
 | Constraint | Impact |
 |---|---|
 | PostgreSQL required | Data is persisted in PostgreSQL via Prisma. Requires `npm run db:migrate` + `npm run db:seed` for first run. |
-| No authentication | Routes are structurally role-aware (Staff / Player / System sections) but no access control. |
+| Auth: credentials only | Auth.js v5 with email/password. No OAuth providers yet. |
 | No real-time updates | No WebSocket or polling. Each page loads its own data. |
 | Male body map only | No female anatomical SVG. |
 | No ACWR or risk engine | Region keys are designed as join keys for future calculations, but no computation exists yet. |

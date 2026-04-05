@@ -1,6 +1,7 @@
 "use client";
 
-import { Menu, Bell } from "lucide-react";
+import { Menu, Bell, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -24,9 +25,13 @@ export default function Header({ onMenuClick, title }: HeaderProps) {
           <Bell className="h-5 w-5" />
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger" />
         </button>
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-xs font-semibold text-white">
-          AK
-        </div>
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="rounded-md p-2 text-muted hover:bg-gray-100 hover:text-foreground"
+          title="Sign out"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </header>
   );

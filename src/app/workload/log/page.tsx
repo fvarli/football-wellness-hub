@@ -1,11 +1,27 @@
+export const dynamic = "force-dynamic";
+
+import { redirect } from "next/navigation";
 import AppShell from "@/components/app-shell";
 import SessionForm from "@/components/session-form";
 import { Dumbbell } from "lucide-react";
+import { getCurrentUser, hasRole } from "@/lib/auth-utils";
 
-// Hardcoded demo player until auth is implemented.
-const DEMO_PLAYER_ID = "1";
+export default async function LogSessionPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
 
-export default function LogSessionPage() {
+  if (!hasRole(user, ["admin", "coach"])) {
+    return (
+      <AppShell title="Log Session">
+        <div className="mx-auto max-w-lg py-16 text-center">
+          <p className="text-sm text-muted">
+            Only coaches and admins can log training sessions.
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Log Session">
       <div className="mx-auto max-w-lg">
@@ -22,7 +38,7 @@ export default function LogSessionPage() {
         </div>
 
         <div className="rounded-xl border border-card-border bg-card-bg p-5">
-          <SessionForm playerId={DEMO_PLAYER_ID} />
+          <SessionForm />
         </div>
       </div>
     </AppShell>

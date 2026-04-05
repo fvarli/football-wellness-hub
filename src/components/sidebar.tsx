@@ -56,10 +56,20 @@ const navSections: NavSection[] = [
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
+  userRole?: string;
+  userName?: string;
 }
 
-export default function Sidebar({ open, onClose }: SidebarProps) {
+export default function Sidebar({ open, onClose, userRole, userName }: SidebarProps) {
   const pathname = usePathname();
+
+  // Filter sections by role
+  const visibleSections = navSections.filter((section) => {
+    if (!userRole) return true; // show all if no role provided
+    if (section.title === "Staff") return userRole === "admin" || userRole === "coach";
+    if (section.title === "Player") return userRole === "player";
+    return true; // System section visible to all
+  });
 
   return (
     <>
@@ -99,7 +109,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Navigation sections */}
         <nav className="mt-2 flex-1 overflow-y-auto px-3">
-          {navSections.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.title} className="mb-4">
               <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-sidebar-text/50">
                 {section.title}
@@ -141,8 +151,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               FC
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white">FC Demo</p>
-              <p className="text-xs text-sidebar-text">Coach View</p>
+              <p className="truncate text-sm font-medium text-white">{userName ?? "User"}</p>
+              <p className="text-xs text-sidebar-text capitalize">{userRole ?? "—"}</p>
             </div>
           </div>
         </div>

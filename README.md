@@ -7,22 +7,30 @@ Professional football player wellness, workload, and injury-risk monitoring web 
 ### Prerequisites
 
 - Node.js 22+
-- PostgreSQL 14+
+- PostgreSQL 14+ (local)
 
 ### Setup
 
 ```bash
 npm install
 
-# Edit .env and set DATABASE_URL to your PostgreSQL instance
+# Edit .env with your PostgreSQL credentials and auth secret
 npx prisma generate
-npm run db:migrate
+npx prisma db push
 npm run db:seed
 
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). You'll be redirected to `/login`.
+
+### Demo Accounts
+
+| Email | Password | Role | Notes |
+|---|---|---|---|
+| admin@fwh.dev | password123 | admin | Full access |
+| coach@fwh.dev | password123 | coach | Staff views + session logging |
+| emre@fwh.dev | password123 | player | Own check-in + own player detail |
 
 ## Architecture
 
@@ -31,6 +39,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | Framework | Next.js 16 (App Router, Turbopack) |
 | Language | TypeScript 5 |
 | Database | PostgreSQL via Prisma 7 |
+| Auth | Auth.js v5 (credentials provider, JWT sessions) |
 | UI | React 19, Tailwind CSS 4, Lucide Icons |
 | Testing | Vitest 4, React Testing Library |
 
@@ -38,36 +47,47 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```
 Pages (server components, async)
-  -> src/lib/data/service.ts (async Prisma queries)
+  -> src/lib/auth.ts (session)
+  -> src/lib/data/service.ts (Prisma queries)
     -> PostgreSQL
     -> src/lib/risk.ts (computed on-the-fly)
 
 Client forms (check-in, log session)
   -> fetch POST/PUT to /api/* routes
+    -> auth check (getCurrentUser)
+    -> authorization check (canAccessPlayer / hasRole)
     -> src/lib/validation.ts (trust boundary)
       -> src/lib/data/service.ts (persist)
 ```
 
 ## Pages
 
-| Route | Description |
-|---|---|
-| `/dashboard` | Squad risk overview with ACWR, wellness, soreness flags |
-| `/players` | Player roster with search, risk badges, wellness scores |
-| `/players/[id]` | Player detail: risk profile, check-in, body soreness, history |
-| `/players/[id]/edit-checkin` | Edit latest wellness check-in (pre-filled form, PUT) |
-| `/wellness` | Squad-wide wellness overview table |
-| `/workload` | Training session list with load metrics |
-| `/workload/log` | Log a training session (type, duration, RPE) |
-| `/check-in` | Daily wellness check-in with anatomical body soreness map |
+| Route | Access | Description |
+|---|---|---|
+| `/login` | Public | Credentials login |
+| `/dashboard` | All authenticated | Squad risk overview |
+| `/players` | Coach, Admin | Player roster with risk badges |
+| `/players/[id]` | Coach, Admin, Own player | Player detail with risk profile |
+| `/players/[id]/edit-checkin` | Coach, Admin, Own player | Edit latest wellness check-in |
+| `/wellness` | Coach, Admin | Squad wellness overview |
+| `/workload` | Coach, Admin | Training session list |
+| `/workload/log` | Coach, Admin | Log a training session |
+| `/check-in` | Player | Daily wellness check-in |
 
 ## API Routes
 
-| Route | Method | Description |
-|---|---|---|
-| `/api/wellness/check-in` | POST | Create wellness entry (rejects same-day duplicate) |
-| `/api/wellness/check-in` | PUT | Update existing wellness entry by entryId |
-| `/api/sessions` | POST | Log a training session |
+| Route | Method | Auth | Description |
+|---|---|---|---|
+| `/api/auth/*` | GET/POST | Public | Auth.js handlers |
+| `/api/wellness/check-in` | POST | Authenticated | Create wellness entry |
+| `/api/wellness/check-in` | PUT | Authenticated | Update wellness entry |
+| `/api/sessions` | POST | Coach/Admin | Log training session |
+
+## Authorization Rules
+
+- **Player**: can create/update only their own wellness check-ins. Can view their own player detail and dashboard. Cannot access squad-wide pages (players list, wellness overview, workload).
+- **Coach/Admin**: can view all squad data, log training sessions, submit check-ins on behalf of players.
+- **API routes**: derive identity from session, not from client-supplied playerId. Players' playerId is forced from session.
 
 ## Scripts
 
@@ -76,49 +96,19 @@ Client forms (check-in, log session)
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
 | `npm test` | Unit tests (117 tests, no DB required) |
-| `npm run test:integration` | Integration tests (7 tests, requires test DB) |
-| `npm run test:all` | Run both unit and integration tests |
+| `npm run test:integration` | Integration tests (7 tests, requires DB) |
+| `npm run test:all` | Both test suites |
 | `npm run lint` | Lint check |
-| `npm run db:migrate` | Apply database migrations (dev DB) |
-| `npm run db:seed` | Seed database with demo data |
-| `npm run db:reset` | Drop + recreate + re-seed |
-| `npm run db:test:setup` | Push schema + seed to the test database |
+| `npm run db:seed` | Seed database with demo data + users |
+| `npm run db:test:setup` | Push schema + seed to test database |
 
 ## Environment Variables
 
-| Variable | File | Description |
+| Variable | Required | Description |
 |---|---|---|
-| `DATABASE_URL` | `.env` | Dev/production PostgreSQL connection string |
-| `DATABASE_URL` | `.env.test` | Test database connection string |
-
-## Integration Tests
-
-Integration tests run against a dedicated test PostgreSQL database, separate from dev.
-
-### Quick setup with Docker
-
-```bash
-# Start a test PostgreSQL container
-docker run -d --name fwh-test-pg \
-  -e POSTGRES_USER=testuser \
-  -e POSTGRES_PASSWORD=testpass \
-  -e POSTGRES_DB=fwh_test \
-  -p 5555:5432 postgres:16-alpine
-
-# Push schema + seed data
-npm run db:test:setup
-
-# Run integration tests
-npm run test:integration
-
-# Run all tests (unit + integration)
-npm run test:all
-```
-
-The `.env.test` file configures the test database connection:
-```
-DATABASE_URL="postgresql://testuser:testpass@localhost:5555/fwh_test?schema=public"
-```
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `AUTH_SECRET` | Yes | Auth.js session signing secret |
+| `AUTH_TRUST_HOST` | Yes | Set to `true` for local dev |
 
 ## Documentation
 
