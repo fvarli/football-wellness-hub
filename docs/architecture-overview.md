@@ -114,9 +114,16 @@ BodyMap component
 | Vitest 4 | Test runner with `globals: true` |
 | React Testing Library | Component rendering + DOM queries |
 | @testing-library/jest-dom | Extended matchers (`.toBeInTheDocument()`) |
-| jsdom | Browser environment |
+| jsdom | Browser environment (unit tests) |
+| node | Node environment (integration tests against PostgreSQL) |
 
-Run: `npm test` (single run) or `npm run test:watch` (watch mode).
+### Test Suites
+
+| Command | Suite | DB Required | Config |
+|---|---|---|---|
+| `npm test` | Unit tests (117) | No | `vitest.config.ts` (jsdom, excludes `integration/`) |
+| `npm run test:integration` | Integration tests (7) | Yes | `vitest.integration.config.ts` (node, `.env.test`) |
+| `npm run test:all` | Both suites | Yes | Runs sequentially |
 
 SVG components are mocked in tests to avoid rendering massive path data. Mocks provide simple clickable buttons with the same `onRegionClick` / `selections` / `getLabel` interface.
 

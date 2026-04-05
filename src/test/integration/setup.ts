@@ -1,9 +1,11 @@
 /**
  * Integration test setup.
  *
- * These tests require a running PostgreSQL instance with the test database.
- * Set DATABASE_URL to your test database in .env.test or environment.
+ * Loads .env.test for DATABASE_URL pointing to the test database.
+ * Tests run against a real PostgreSQL instance.
  *
- * Run: npm run test:integration
+ * Setup: DATABASE_URL="postgresql://testuser:testpass@localhost:5555/fwh_test" npx prisma db push && npx tsx prisma/seed.ts
+ * Run:   npm run test:integration
  */
-import "@testing-library/jest-dom/vitest";
+import { config } from "dotenv";
+config({ path: ".env.test" });

@@ -1,18 +1,19 @@
 import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { players, wellnessEntries, trainingSessions } from "../src/lib/mock-data";
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL ?? "";
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding database...");
 
-  // Clear existing data (order matters due to FK constraints)
   await prisma.wellnessBodyMapSelection.deleteMany();
   await prisma.wellnessEntry.deleteMany();
   await prisma.trainingSession.deleteMany();
   await prisma.player.deleteMany();
 
-  // Players
   for (const p of players) {
     await prisma.player.create({
       data: { id: p.id, name: p.name, position: p.position, number: p.number, age: p.age, status: p.status },
@@ -20,7 +21,6 @@ async function main() {
   }
   console.log(`  ${players.length} players`);
 
-  // Wellness entries + body map selections
   for (const e of wellnessEntries) {
     await prisma.wellnessEntry.create({
       data: {
@@ -49,7 +49,6 @@ async function main() {
   }
   console.log(`  ${wellnessEntries.length} wellness entries`);
 
-  // Training sessions
   for (const s of trainingSessions) {
     await prisma.trainingSession.create({
       data: {
