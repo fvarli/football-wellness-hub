@@ -4,6 +4,7 @@ import AppShell from "@/components/app-shell";
 import StatCard from "@/components/stat-card";
 import { getAllSessions } from "@/lib/data/service";
 import { getCurrentUser } from "@/lib/auth-utils";
+import SessionActions from "@/components/session-actions";
 
 export const dynamic = "force-dynamic";
 import type { SessionType } from "@/lib/types";
@@ -93,6 +94,7 @@ export default async function WorkloadPage() {
                   Load
                 </span>
               </th>
+              <th className="px-2 py-3 font-medium text-muted"></th>
             </tr>
           </thead>
           <tbody>
@@ -127,6 +129,9 @@ export default async function WorkloadPage() {
                 </td>
                 <td className={`px-3 py-3 text-center ${loadColor(s.sessionLoad)}`}>
                   {s.sessionLoad} AU
+                </td>
+                <td className="px-2 py-3">
+                  <SessionActions sessionId={s.id} editHref={`/workload/edit/${s.id}`} />
                 </td>
               </tr>
             ))}

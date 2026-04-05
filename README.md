@@ -83,6 +83,8 @@ Client forms (check-in, log session)
 | `/api/wellness/check-in` | POST | Authenticated | Create wellness entry |
 | `/api/wellness/check-in` | PUT | Authenticated | Update wellness entry |
 | `/api/sessions` | POST | Coach/Admin | Log training session |
+| `/api/sessions` | PUT | Coach/Admin | Update training session (requires sessionId) |
+| `/api/sessions` | DELETE | Coach/Admin | Delete training session (requires sessionId) |
 
 ## Authorization Rules
 

@@ -12,6 +12,7 @@ import { getCurrentUser } from "@/lib/auth-utils";
 import { WELLNESS_METRICS } from "@/lib/types";
 import type { SessionType } from "@/lib/types";
 import { Activity, TrendingUp, Lightbulb } from "lucide-react";
+import SessionActions from "@/components/session-actions";
 import Sparkline from "@/components/sparkline";
 import { generatePlayerInsights } from "@/lib/insights";
 
@@ -291,7 +292,8 @@ export default async function PlayerDetailPage({
                     <th className="pb-2 pr-4 font-medium text-muted">Type</th>
                     <th className="pb-2 pr-4 text-center font-medium text-muted">Duration</th>
                     <th className="pb-2 pr-4 text-center font-medium text-muted">RPE</th>
-                    <th className="pb-2 text-center font-medium text-muted">Load</th>
+                    <th className="pb-2 pr-2 text-center font-medium text-muted">Load</th>
+                    <th className="pb-2 font-medium text-muted"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -313,8 +315,11 @@ export default async function PlayerDetailPage({
                           {s.rpe}
                         </span>
                       </td>
-                      <td className={`py-2.5 text-center font-medium ${loadColor(s.sessionLoad)}`}>
+                      <td className={`py-2.5 pr-2 text-center font-medium ${loadColor(s.sessionLoad)}`}>
                         {s.sessionLoad} AU
+                      </td>
+                      <td className="py-2.5">
+                        <SessionActions sessionId={s.id} editHref={`/workload/edit/${s.id}`} />
                       </td>
                     </tr>
                   ))}

@@ -12,6 +12,8 @@ import {
   getWellnessForPlayer,
   getLatestWellness,
   submitTrainingSession,
+  updateTrainingSession,
+  deleteTrainingSession,
   getSessionsForPlayer,
   getRiskSnapshot,
 } from "@/lib/data/service";
@@ -149,6 +151,55 @@ describe("submitTrainingSession (integration)", () => {
     expect(result.data.sessionLoad).toBe(420);
     const after = (await getSessionsForPlayer(TEST_PLAYER)).length;
     expect(after).toBe(before + 1);
+  });
+});
+
+describe("updateTrainingSession (integration)", () => {
+  it("updates session and recalculates load", async () => {
+    const create = await submitTrainingSession({
+      playerId: TEST_PLAYER, date: uniqueDate(), type: "training", durationMinutes: 60, rpe: 5,
+    });
+    expect(create.ok).toBe(true);
+    if (!create.ok) return;
+
+    const update = await updateTrainingSession(create.data.id, {
+      playerId: TEST_PLAYER, date: create.data.date, type: "match", durationMinutes: 90, rpe: 8,
+    });
+    expect(update.ok).toBe(true);
+    if (!update.ok) return;
+    expect(update.data.sessionLoad).toBe(720);
+    expect(update.data.type).toBe("match");
+  });
+
+  it("rejects update for non-existent session", async () => {
+    const result = await updateTrainingSession("nonexistent", {
+      playerId: TEST_PLAYER, date: "2099-01-01", type: "training", durationMinutes: 60, rpe: 5,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors[0].message).toContain("not found");
+  });
+});
+
+describe("deleteTrainingSession (integration)", () => {
+  it("deletes a session successfully", async () => {
+    const create = await submitTrainingSession({
+      playerId: TEST_PLAYER, date: uniqueDate(), type: "gym", durationMinutes: 45, rpe: 4,
+    });
+    expect(create.ok).toBe(true);
+    if (!create.ok) return;
+
+    const del = await deleteTrainingSession(create.data.id);
+    expect(del.ok).toBe(true);
+
+    // Verify it's gone
+    const sessions = await getSessionsForPlayer(TEST_PLAYER);
+    expect(sessions.find((s) => s.id === create.data.id)).toBeUndefined();
+  });
+
+  it("rejects delete for non-existent session", async () => {
+    const result = await deleteTrainingSession("nonexistent");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors[0].message).toContain("not found");
   });
 });
 

@@ -107,4 +107,15 @@ describe("training session write contract", () => {
     const result = validateTrainingSession({ playerId: "1", type: "invalid" });
     expect(result.ok).toBe(false);
   });
+
+  it("update uses the same validation as create", () => {
+    const valid = validateTrainingSession({
+      playerId: "1", date: "2026-06-01", type: "match", durationMinutes: 90, rpe: 8,
+    });
+    expect(valid.ok).toBe(true);
+    if (valid.ok) expect(valid.data.sessionLoad).toBe(720);
+
+    const invalid = validateTrainingSession({ playerId: "1", type: "yoga" });
+    expect(invalid.ok).toBe(false);
+  });
 });

@@ -333,5 +333,57 @@ export async function submitTrainingSession(
   return { ok: true, data: mapSession(row) };
 }
 
+/**
+ * Update an existing training session by ID.
+ * Validates input, derives sessionLoad, prevents cross-player edit.
+ */
+export async function updateTrainingSession(
+  sessionId: string,
+  input: unknown,
+): Promise<ValidationResult<TrainingSession>> {
+  const result = validateTrainingSession(input);
+  if (!result.ok) return result;
+
+  const d = result.data;
+
+  const existing = await prisma.trainingSession.findUnique({ where: { id: sessionId } });
+  if (!existing) {
+    return { ok: false, errors: [{ field: "id", message: `Session ${sessionId} not found` }] };
+  }
+
+  if (existing.playerId !== d.playerId) {
+    return { ok: false, errors: [{ field: "playerId", message: "Cannot change the player for an existing session" }] };
+  }
+
+  const row = await prisma.trainingSession.update({
+    where: { id: sessionId },
+    data: {
+      date: d.date,
+      type: d.type,
+      durationMinutes: d.durationMinutes,
+      rpe: d.rpe,
+      sessionLoad: d.sessionLoad,
+      notes: d.notes ?? null,
+    },
+  });
+
+  return { ok: true, data: mapSession(row) };
+}
+
+/**
+ * Delete a training session by ID. Returns success or not-found error.
+ */
+export async function deleteTrainingSession(
+  sessionId: string,
+): Promise<ValidationResult<{ id: string }>> {
+  const existing = await prisma.trainingSession.findUnique({ where: { id: sessionId } });
+  if (!existing) {
+    return { ok: false, errors: [{ field: "id", message: `Session ${sessionId} not found` }] };
+  }
+
+  await prisma.trainingSession.delete({ where: { id: sessionId } });
+  return { ok: true, data: { id: sessionId } };
+}
+
 // Re-export validation types for API routes
 export type { ValidationResult, WriteError, ValidatedWellnessCheckIn, ValidatedTrainingSession };

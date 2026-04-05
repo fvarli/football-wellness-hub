@@ -14,8 +14,9 @@ football-wellness-hub/
       players/page.tsx         Player list
       players/[id]/page.tsx    Player detail (server component, async params)
       wellness/page.tsx        Squad wellness overview
-      workload/page.tsx        Training session list + workload summary
+      workload/page.tsx        Training session list + workload summary (with edit/delete actions)
       workload/log/page.tsx    Training session creation form
+      workload/edit/[sessionId]/page.tsx  Edit training session (pre-filled form, PUT)
       check-in/page.tsx        Player daily check-in (session-derived playerId)
       login/page.tsx           Credentials login page
       players/[id]/edit-checkin/page.tsx  Edit latest wellness check-in (pre-filled form, PUT)
@@ -23,7 +24,7 @@ football-wellness-hub/
       api/
         auth/[...nextauth]/route.ts  Auth.js GET/POST handlers
         wellness/check-in/route.ts   POST — create, PUT — update (auth-protected)
-        sessions/route.ts            POST — log session (coach/admin only)
+        sessions/route.ts            POST/PUT/DELETE — session CRUD (coach/admin only)
     middleware.ts                    Edge-safe route protection via auth.config.ts (no Prisma/bcrypt)
     components/
       app-shell.tsx            Layout wrapper (sidebar + header + content)
@@ -34,7 +35,8 @@ football-wellness-hub/
       risk-badge.tsx           RiskLevelBadge, TrendBadge, AcwrValue presentational helpers
       rating-input.tsx         1-10 button group for wellness metrics
       wellness-form.tsx        Full check-in form (metrics + body map + notes)
-      session-form.tsx         Training session creation form (type + duration + RPE)
+      session-form.tsx         Training session form (type + duration + RPE) — create + edit modes
+      session-actions.tsx      Edit link + delete button with confirmation flow
       player-picker-checkin.tsx  Coach/admin player selector + wellness form wrapper
       player-picker-session.tsx Coach/admin player selector + session form wrapper
       players-list.tsx         Client-side player search (receives data from server component)
@@ -72,9 +74,10 @@ football-wellness-hub/
       service-writes.test.ts   Write contract unit tests (9 cases)
       integration/
         setup.ts               Integration test setup
-        wellness-writes.test.ts  Prisma-backed write integration tests (6 cases, requires DB)
+        wellness-writes.test.ts  Prisma-backed write integration tests (11 cases, requires DB)
       wellness-form.test.tsx   Wellness form submit flow tests (8 cases)
       session-form.test.tsx    Session form submit flow tests (6 cases)
+      session-actions.test.tsx Session actions component tests (4 cases)
       auth-api.test.ts         Auth/RBAC logic tests (13 cases)
       insights.test.ts         Player insight generator tests (12 cases)
       squad-insights.test.ts   Squad insight generator tests (14 cases)
@@ -140,8 +143,8 @@ BodyMap component
 
 | Command | Suite | DB Required | Config |
 |---|---|---|---|
-| `npm test` | Unit tests (117) | No | `vitest.config.ts` (jsdom, excludes `integration/`) |
-| `npm run test:integration` | Integration tests (7) | Yes | `vitest.integration.config.ts` (node, `.env.test`) |
+| `npm test` | Unit tests (157) | No | `vitest.config.ts` (jsdom, excludes `integration/`) |
+| `npm run test:integration` | Integration tests (11) | Yes | `vitest.integration.config.ts` (node, `.env.test`) |
 | `npm run test:all` | Both suites | Yes | Runs sequentially |
 
 SVG components are mocked in tests to avoid rendering massive path data. Mocks provide simple clickable buttons with the same `onRegionClick` / `selections` / `getLabel` interface.

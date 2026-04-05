@@ -233,25 +233,38 @@
 - Access control: same as player detail (coach/admin + own player)
 - Turbopack remains enabled — no webpack fallback needed
 
+### Complete Workload CRUD (Session Edit + Delete)
+- `updateTrainingSession(sessionId, input)` and `deleteTrainingSession(sessionId)` in service layer
+- `PUT /api/sessions` — updates session with revalidated payload, recalculates load
+- `DELETE /api/sessions` — deletes session by ID, coach/admin only
+- `SessionActions` client component: edit (pencil icon link) + delete (trash icon with confirm/cancel flow)
+- `/workload/edit/[sessionId]` page — pre-fills SessionForm from existing session data
+- SessionForm supports `initialSession` prop for edit mode (PUT instead of POST, back navigation)
+- Actions column added to both `/workload` and `/players/[id]` session tables
+- 4 new integration tests: update + recalculate, not-found rejection, delete + verify gone, delete not-found
+- 1 new component test file for SessionActions (4 cases)
+- 157 unit tests + 11 integration tests, all passing
+
 ## Current Stable Baseline
 
-The application is a **full-stack application with complete authentication, RBAC, analytics, and PostgreSQL persistence**:
+The application is a **full-stack application with complete authentication, RBAC, full CRUD, analytics, and PostgreSQL persistence**:
 - All major UI screens built with session-aware navigation
 - Auth.js v5 authentication with credentials provider and JWT sessions
 - Role-based access control: admin, coach, player — enforced via middleware + API routes
 - Dashboard shows stat cards, squad-level insights with linked player names, and risk table
-- Player detail shows risk profile, trend sparklines + interpreted insights, latest check-in, body soreness, recent sessions, wellness history
+- Player detail shows risk profile, trend sparklines + interpreted insights, latest check-in, body soreness, recent sessions (with edit/delete), wellness history
 - Player analytics page with interactive charts and time window controls
 - Coach/admin player picker on both check-in and session logging pages
 - Data persisted in PostgreSQL via Prisma 7 (standard @prisma/client import)
 - Wellness check-in: POST creates, PUT updates, identity from session
-- Training session creation restricted to coach/admin with player dropdown
+- Training sessions: full CRUD (POST create, PUT update, DELETE) restricted to coach/admin
 - One check-in per player per day enforced
 - Wellness edit UI at `/players/[id]/edit-checkin`
+- Session edit UI at `/workload/edit/[sessionId]`
 - Body map selections stored as normalized child rows
 - Risk computation (ACWR, wellness trend, soreness flags) from persisted data
 - Polished responsive design
-- 156 unit tests + 7 integration tests, all passing
+- 157 unit tests + 11 integration tests, all passing
 
 All four checks pass: unit tests, integration tests, build, lint.
 
