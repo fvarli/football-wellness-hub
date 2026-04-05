@@ -243,7 +243,7 @@
 - Actions column added to both `/workload` and `/players/[id]` session tables
 - 4 new integration tests: update + recalculate, not-found rejection, delete + verify gone, delete not-found
 - 1 new component test file for SessionActions (4 cases)
-- 157 unit tests + 11 integration tests, all passing
+- 161 unit tests + 11 integration tests, all passing
 
 ## Current Stable Baseline
 
@@ -264,7 +264,7 @@ The application is a **full-stack application with complete authentication, RBAC
 - Body map selections stored as normalized child rows
 - Risk computation (ACWR, wellness trend, soreness flags) from persisted data
 - Polished responsive design
-- 157 unit tests + 11 integration tests, all passing
+- 161 unit tests + 11 integration tests, all passing
 
 All four checks pass: unit tests, integration tests, build, lint.
 

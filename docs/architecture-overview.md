@@ -143,7 +143,7 @@ BodyMap component
 
 | Command | Suite | DB Required | Config |
 |---|---|---|---|
-| `npm test` | Unit tests (157) | No | `vitest.config.ts` (jsdom, excludes `integration/`) |
+| `npm test` | Unit tests (161) | No | `vitest.config.ts` (jsdom, excludes `integration/`) |
 | `npm run test:integration` | Integration tests (11) | Yes | `vitest.integration.config.ts` (node, `.env.test`) |
 | `npm run test:all` | Both suites | Yes | Runs sequentially |
 

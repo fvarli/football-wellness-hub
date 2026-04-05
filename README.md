@@ -98,8 +98,8 @@ Client forms (check-in, log session)
 |---|---|
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm test` | Unit tests (156 tests, no DB required) |
-| `npm run test:integration` | Integration tests (7 tests, requires DB) |
+| `npm test` | Unit tests (161 tests, no DB required) |
+| `npm run test:integration` | Integration tests (11 tests, requires DB) |
 | `npm run test:all` | Both test suites |
 | `npm run lint` | Lint check |
 | `npm run db:seed` | Seed database with demo data + users |
