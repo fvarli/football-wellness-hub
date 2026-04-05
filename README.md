@@ -71,7 +71,7 @@ Client forms (check-in, log session)
 | `/players/[id]/edit-checkin` | Coach, Admin, Own player | Edit latest wellness check-in |
 | `/wellness` | Coach, Admin | Squad wellness overview |
 | `/workload` | Coach, Admin | Training session list |
-| `/workload/log` | Coach, Admin | Log a training session |
+| `/workload/log` | Coach, Admin | Log a training session — player picker + type, duration, RPE |
 | `/check-in` | Player: own check-in; Coach/Admin: player picker | Daily wellness check-in |
 
 ## API Routes

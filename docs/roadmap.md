@@ -177,6 +177,14 @@
 - No hardcoded playerId anywhere in the codebase
 - 130 unit tests + 7 integration tests, all passing
 
+### Workload Player Picker
+- `/workload/log` now uses a proper player dropdown (matching check-in UX)
+- Free-text playerId input removed from SessionForm
+- SessionForm receives `playerId` + `playerName` as required props
+- `PlayerPickerSession` component wraps dropdown + form
+- Server component fetches player list, passes to client picker
+- Success screen shows player name with session load
+
 ## Current Stable Baseline
 
 The application is a **full-stack application with complete authentication, RBAC, and PostgreSQL persistence**:
@@ -184,10 +192,10 @@ The application is a **full-stack application with complete authentication, RBAC
 - Auth.js v5 authentication with credentials provider and JWT sessions
 - Role-based access control: admin, coach, player — enforced via middleware + API routes
 - Every page passes real user identity to AppShell/Sidebar
-- Coach/admin player picker on check-in page
+- Coach/admin player picker on both check-in and session logging pages
 - Data persisted in PostgreSQL via Prisma 7
 - Wellness check-in: POST creates, PUT updates, identity from session
-- Training session creation restricted to coach/admin
+- Training session creation restricted to coach/admin with player dropdown
 - One check-in per player per day enforced
 - Wellness edit UI at `/players/[id]/edit-checkin`
 - Body map selections stored as normalized child rows

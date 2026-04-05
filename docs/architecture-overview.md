@@ -35,6 +35,7 @@ football-wellness-hub/
       wellness-form.tsx        Full check-in form (metrics + body map + notes)
       session-form.tsx         Training session creation form (type + duration + RPE)
       player-picker-checkin.tsx  Coach/admin player selector + wellness form wrapper
+      player-picker-session.tsx Coach/admin player selector + session form wrapper
       players-list.tsx         Client-side player search (receives data from server component)
       body-map.tsx             Interactive body map (selection state, picker, list)
       body-map-summary.tsx     Read-only body map summary for detail pages

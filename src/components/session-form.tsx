@@ -13,12 +13,11 @@ const SESSION_TYPES: { value: SessionType; label: string }[] = [
 ];
 
 interface SessionFormProps {
-  /** If provided, playerId is pre-filled and locked. Otherwise coach enters it. */
-  defaultPlayerId?: string;
+  playerId: string;
+  playerName?: string;
 }
 
-export default function SessionForm({ defaultPlayerId }: SessionFormProps) {
-  const [playerId, setPlayerId] = useState(defaultPlayerId ?? "");
+export default function SessionForm({ playerId, playerName }: SessionFormProps) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [type, setType] = useState<SessionType>("training");
   const [duration, setDuration] = useState("");
@@ -30,7 +29,7 @@ export default function SessionForm({ defaultPlayerId }: SessionFormProps) {
   const [createdLoad, setCreatedLoad] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
 
-  const canSubmit = playerId.length > 0 && date.length > 0 && duration.length > 0 && rpe !== null && !submitting;
+  const canSubmit = date.length > 0 && duration.length > 0 && rpe !== null && !submitting;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,7 +75,6 @@ export default function SessionForm({ defaultPlayerId }: SessionFormProps) {
   }
 
   function resetForm() {
-    if (!defaultPlayerId) setPlayerId("");
     setDate(new Date().toISOString().slice(0, 10));
     setType("training");
     setDuration("");
@@ -93,7 +91,7 @@ export default function SessionForm({ defaultPlayerId }: SessionFormProps) {
         <CheckCircle className="h-16 w-16 text-accent" />
         <h3 className="mt-4 text-xl font-bold text-foreground">Session Logged</h3>
         <p className="mt-2 text-sm text-muted">
-          Session load: <span className="font-semibold text-foreground">{createdLoad} AU</span>
+          {playerName ? `${playerName}'s session` : "Session"} — load: <span className="font-semibold text-foreground">{createdLoad} AU</span>
         </p>
         <button
           type="button"
@@ -124,22 +122,6 @@ export default function SessionForm({ defaultPlayerId }: SessionFormProps) {
           </div>
         </div>
       )}
-
-      {/* Player ID */}
-      <div>
-        <label htmlFor="session-player" className="mb-2 block text-sm font-medium text-foreground">
-          Player ID
-        </label>
-        <input
-          id="session-player"
-          type="text"
-          value={playerId}
-          onChange={(e) => setPlayerId(e.target.value)}
-          disabled={!!defaultPlayerId}
-          placeholder="e.g. 1"
-          className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-gray-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:bg-gray-50 disabled:text-muted"
-        />
-      </div>
 
       {/* Date */}
       <div>

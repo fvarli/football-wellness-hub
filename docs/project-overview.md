@@ -33,7 +33,7 @@ Replace spreadsheet-based wellness tracking with a purpose-built tool that:
 | Edit check-in | `/players/[id]/edit-checkin` | Pre-filled wellness form for updating the latest check-in (PUT) |
 | Wellness overview | `/wellness` | Squad-wide color-coded wellness table |
 | Workload | `/workload` | Training session list with summary cards (total sessions, avg load, highest load) + link to log form |
-| Log Session | `/workload/log` | Training session creation form: type, duration, RPE, notes. Submits to `POST /api/sessions`. |
+| Log Session | `/workload/log` | Player picker + session form (type, duration, RPE). Coach/admin only. |
 | Daily check-in | `/check-in` | 6-metric wellness form + anatomical body soreness map |
 | Settings | `/settings` | Placeholder |
 

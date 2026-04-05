@@ -25,7 +25,7 @@ describe("SessionForm submit flow", () => {
       json: () => Promise.resolve({ id: "ts99", sessionLoad: 450 }),
     });
 
-    render(<SessionForm defaultPlayerId="1" />);
+    render(<SessionForm playerId="1" />);
     fillForm();
 
     fireEvent.click(screen.getByRole("button", { name: /log session/i }));
@@ -52,7 +52,7 @@ describe("SessionForm submit flow", () => {
       }),
     });
 
-    render(<SessionForm defaultPlayerId="1" />);
+    render(<SessionForm playerId="1" />);
     fillForm();
 
     fireEvent.click(screen.getByRole("button", { name: /log session/i }));
@@ -70,7 +70,7 @@ describe("SessionForm submit flow", () => {
   it("shows network error on fetch failure", async () => {
     global.fetch = vi.fn().mockRejectedValueOnce(new Error("Network error"));
 
-    render(<SessionForm defaultPlayerId="1" />);
+    render(<SessionForm playerId="1" />);
     fillForm();
 
     fireEvent.click(screen.getByRole("button", { name: /log session/i }));
@@ -86,7 +86,7 @@ describe("SessionForm submit flow", () => {
 
     global.fetch = vi.fn().mockReturnValueOnce(pending);
 
-    render(<SessionForm defaultPlayerId="1" />);
+    render(<SessionForm playerId="1" />);
     fillForm();
 
     fireEvent.click(screen.getByRole("button", { name: /log session/i }));
@@ -105,7 +105,7 @@ describe("SessionForm submit flow", () => {
       json: () => Promise.resolve({ id: "ts99", sessionLoad: 450 }),
     });
 
-    render(<SessionForm defaultPlayerId="1" />);
+    render(<SessionForm playerId="1" />);
     fillForm();
 
     fireEvent.click(screen.getByRole("button", { name: /log session/i }));
@@ -122,7 +122,7 @@ describe("SessionForm submit flow", () => {
   });
 
   it("shows estimated load preview when RPE and duration are filled", () => {
-    render(<SessionForm defaultPlayerId="1" />);
+    render(<SessionForm playerId="1" />);
     fillForm(); // duration=75, rpe=6
 
     expect(screen.getByText("450")).toBeInTheDocument();
