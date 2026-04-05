@@ -67,7 +67,7 @@ Client forms (check-in, log session)
 | `/login` | Public | Credentials login |
 | `/dashboard` | All authenticated | Squad risk overview |
 | `/players` | Coach, Admin | Player roster with risk badges |
-| `/players/[id]` | Coach, Admin, Own player | Player detail: risk profile, check-in, body soreness, recent sessions, wellness history |
+| `/players/[id]` | Coach, Admin, Own player | Player detail: risk profile, trend sparklines, check-in, body soreness, sessions, history |
 | `/players/[id]/edit-checkin` | Coach, Admin, Own player | Edit latest wellness check-in |
 | `/wellness` | Coach, Admin | Squad wellness overview |
 | `/workload` | Coach, Admin | Training session list |

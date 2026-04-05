@@ -192,13 +192,21 @@
 - Up to 10 most recent sessions shown, sorted by date descending
 - Wellness + risk + workload all visible together on one player page
 
+### Compact Trend Visualization
+- Zero-dependency SVG `Sparkline` component — polyline + filled area + endpoint dot
+- Wellness score trend (green) and session load trend (amber) shown side by side
+- Up to 10 data points per chart, oldest first
+- Current value displayed prominently next to each chart
+- Graceful empty state when fewer than 2 data points
+- Placed between Risk Profile and Latest Check-in on player detail
+
 ## Current Stable Baseline
 
 The application is a **full-stack application with complete authentication, RBAC, and PostgreSQL persistence**:
 - All major UI screens built with session-aware navigation
 - Auth.js v5 authentication with credentials provider and JWT sessions
 - Role-based access control: admin, coach, player — enforced via middleware + API routes
-- Player detail shows risk profile, latest check-in, body soreness, recent training sessions, and wellness history
+- Player detail shows risk profile, trend sparklines, latest check-in, body soreness, recent sessions, and wellness history
 - Coach/admin player picker on both check-in and session logging pages
 - Data persisted in PostgreSQL via Prisma 7
 - Wellness check-in: POST creates, PUT updates, identity from session

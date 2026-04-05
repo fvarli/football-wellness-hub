@@ -11,7 +11,8 @@ import { getPlayerById, getWellnessForPlayer, getLatestWellness, getRiskSnapshot
 import { getCurrentUser } from "@/lib/auth-utils";
 import { WELLNESS_METRICS } from "@/lib/types";
 import type { SessionType } from "@/lib/types";
-import { Activity } from "lucide-react";
+import { Activity, TrendingUp } from "lucide-react";
+import Sparkline from "@/components/sparkline";
 
 const statusStyles: Record<string, string> = {
   available: "bg-emerald-100 text-emerald-700",
@@ -66,6 +67,10 @@ export default async function PlayerDetailPage({
   const maxLoad = totalSessions > 0
     ? Math.max(...recentSessions.map((s) => s.sessionLoad))
     : 0;
+
+  // Trend data (oldest first for sparkline, capped at 10 points)
+  const wellnessTrendData = entries.slice(0, 10).reverse().map((e) => e.overallScore);
+  const loadTrendData = recentSessions.slice().reverse().map((s) => s.sessionLoad);
 
   return (
     <AppShell title={player.name} userRole={user?.role} userName={user?.name}>
@@ -140,6 +145,30 @@ export default async function PlayerDetailPage({
           </div>
         )}
       </div>
+
+      {/* Trends */}
+      {(wellnessTrendData.length >= 2 || loadTrendData.length >= 2) && (
+        <div className="mt-4 rounded-xl border border-card-border bg-card-bg p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">Trends</h3>
+            <TrendingUp className="h-4 w-4 text-muted" />
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <Sparkline
+              data={wellnessTrendData}
+              label="Wellness Score"
+              currentValue={latest ? latest.overallScore.toFixed(1) : undefined}
+              color="#10b981"
+            />
+            <Sparkline
+              data={loadTrendData}
+              label="Session Load (AU)"
+              currentValue={loadTrendData.length > 0 ? `${loadTrendData[loadTrendData.length - 1]}` : undefined}
+              color="#f59e0b"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Latest scores breakdown */}
       {latest && (

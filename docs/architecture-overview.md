@@ -37,6 +37,7 @@ football-wellness-hub/
       player-picker-checkin.tsx  Coach/admin player selector + wellness form wrapper
       player-picker-session.tsx Coach/admin player selector + session form wrapper
       players-list.tsx         Client-side player search (receives data from server component)
+      sparkline.tsx            Zero-dependency SVG sparkline for inline trend charts
       body-map.tsx             Interactive body map (selection state, picker, list)
       body-map-summary.tsx     Read-only body map summary for detail pages
       male-front-svg.tsx       Anatomical male front SVG with clickable regions
