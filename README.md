@@ -67,7 +67,7 @@ Client forms (check-in, log session)
 | `/login` | Public | Credentials login |
 | `/dashboard` | All authenticated | Squad risk overview |
 | `/players` | Coach, Admin | Player roster with risk badges |
-| `/players/[id]` | Coach, Admin, Own player | Player detail: risk profile, trend sparklines, check-in, body soreness, sessions, history |
+| `/players/[id]` | Coach, Admin, Own player | Player detail: risk profile, trends + insights, check-in, body soreness, sessions, history |
 | `/players/[id]/edit-checkin` | Coach, Admin, Own player | Edit latest wellness check-in |
 | `/wellness` | Coach, Admin | Squad wellness overview |
 | `/workload` | Coach, Admin | Training session list |
@@ -95,7 +95,7 @@ Client forms (check-in, log session)
 |---|---|
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm test` | Unit tests (130 tests, no DB required) |
+| `npm test` | Unit tests (142 tests, no DB required) |
 | `npm run test:integration` | Integration tests (7 tests, requires DB) |
 | `npm run test:all` | Both test suites |
 | `npm run lint` | Lint check |

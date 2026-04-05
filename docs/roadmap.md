@@ -175,7 +175,7 @@
 - Players see own check-in form directly; coaches/admins see player picker
 - Staff sidebar includes "Submit Check-in" link
 - No hardcoded playerId anywhere in the codebase
-- 130 unit tests + 7 integration tests, all passing
+- 142 unit tests + 7 integration tests, all passing
 
 ### Workload Player Picker
 - `/workload/log` now uses a proper player dropdown (matching check-in UX)
@@ -200,13 +200,22 @@
 - Graceful empty state when fewer than 2 data points
 - Placed between Risk Profile and Latest Check-in on player detail
 
+### Interpreted Trend Insights
+- Pure function `generatePlayerInsights()` in `src/lib/insights.ts`
+- 7 rule-based insight types: wellness trend, low/high wellness, load spike, peak load, combined decline+load, soreness flags, ACWR range
+- Each insight typed as positive (green), warning (orange), or neutral (gray)
+- Displayed as compact colored rows below the sparklines in the Trends card
+- Empty state: hidden when no insights generated; "No data" when zero entries + sessions
+- 12 unit tests covering every rule and edge case
+- 142 unit tests + 7 integration tests total
+
 ## Current Stable Baseline
 
 The application is a **full-stack application with complete authentication, RBAC, and PostgreSQL persistence**:
 - All major UI screens built with session-aware navigation
 - Auth.js v5 authentication with credentials provider and JWT sessions
 - Role-based access control: admin, coach, player — enforced via middleware + API routes
-- Player detail shows risk profile, trend sparklines, latest check-in, body soreness, recent sessions, and wellness history
+- Player detail shows risk profile, trend sparklines + interpreted insights, latest check-in, body soreness, recent sessions, wellness history
 - Coach/admin player picker on both check-in and session logging pages
 - Data persisted in PostgreSQL via Prisma 7
 - Wellness check-in: POST creates, PUT updates, identity from session
@@ -216,7 +225,7 @@ The application is a **full-stack application with complete authentication, RBAC
 - Body map selections stored as normalized child rows
 - Risk computation (ACWR, wellness trend, soreness flags) from persisted data
 - Polished responsive design
-- 130 unit tests + 7 integration tests, all passing
+- 142 unit tests + 7 integration tests, all passing
 
 All four checks pass: unit tests, integration tests, build, lint.
 

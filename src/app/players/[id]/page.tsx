@@ -11,8 +11,9 @@ import { getPlayerById, getWellnessForPlayer, getLatestWellness, getRiskSnapshot
 import { getCurrentUser } from "@/lib/auth-utils";
 import { WELLNESS_METRICS } from "@/lib/types";
 import type { SessionType } from "@/lib/types";
-import { Activity, TrendingUp } from "lucide-react";
+import { Activity, TrendingUp, Lightbulb } from "lucide-react";
 import Sparkline from "@/components/sparkline";
+import { generatePlayerInsights } from "@/lib/insights";
 
 const statusStyles: Record<string, string> = {
   available: "bg-emerald-100 text-emerald-700",
@@ -71,6 +72,9 @@ export default async function PlayerDetailPage({
   // Trend data (oldest first for sparkline, capped at 10 points)
   const wellnessTrendData = entries.slice(0, 10).reverse().map((e) => e.overallScore);
   const loadTrendData = recentSessions.slice().reverse().map((s) => s.sessionLoad);
+
+  // Insights
+  const insights = generatePlayerInsights(snap, entries, sessions);
 
   return (
     <AppShell title={player.name} userRole={user?.role} userName={user?.name}>
@@ -167,6 +171,35 @@ export default async function PlayerDetailPage({
               color="#f59e0b"
             />
           </div>
+
+          {/* Insights */}
+          {insights.length > 0 && (
+            <div className="mt-4 border-t border-card-border pt-4">
+              <div className="mb-2 flex items-center gap-1.5">
+                <Lightbulb className="h-3.5 w-3.5 text-muted" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted">Insights</span>
+              </div>
+              <div className="space-y-1.5">
+                {insights.map((insight, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-start gap-2 rounded-md px-3 py-1.5 text-xs ${
+                      insight.type === "warning"
+                        ? "bg-orange-50 text-orange-800"
+                        : insight.type === "positive"
+                          ? "bg-emerald-50 text-emerald-800"
+                          : "bg-gray-50 text-muted"
+                    }`}
+                  >
+                    <span className="mt-0.5 shrink-0">
+                      {insight.type === "warning" ? "!" : insight.type === "positive" ? "+" : "–"}
+                    </span>
+                    <span>{insight.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

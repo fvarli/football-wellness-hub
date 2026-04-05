@@ -54,6 +54,7 @@ football-wellness-hub/
         service.ts             Async data access service — reads + writes via Prisma
       mock-data.ts             Seed data arrays (used by prisma/seed.ts only)
       risk.ts                  Pure computation: ACWR, wellness trend, soreness flags, risk level
+      insights.ts              Deterministic insight generator from player data
     test/
       setup.ts                 Vitest setup (jest-dom matchers)
       vitest.d.ts              Type declarations for Vitest globals + jest-dom
@@ -70,6 +71,7 @@ football-wellness-hub/
       wellness-form.test.tsx   Wellness form submit flow tests (8 cases)
       session-form.test.tsx    Session form submit flow tests (6 cases)
       auth-api.test.ts         Auth/RBAC logic tests (13 cases)
+      insights.test.ts         Player insight generator tests (12 cases)
   vitest.config.ts             Test runner config
   tsconfig.json                TypeScript config
   next.config.ts               Next.js config
