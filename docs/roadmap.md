@@ -185,13 +185,20 @@
 - Server component fetches player list, passes to client picker
 - Success screen shows player name with session load
 
+### Player Workload Visibility
+- `/players/[id]` now shows "Recent Sessions" section with training session data
+- Mini summary stats: total sessions, average load, peak load
+- Session table: date, type badge, duration, RPE chip, load (color-coded)
+- Up to 10 most recent sessions shown, sorted by date descending
+- Wellness + risk + workload all visible together on one player page
+
 ## Current Stable Baseline
 
 The application is a **full-stack application with complete authentication, RBAC, and PostgreSQL persistence**:
 - All major UI screens built with session-aware navigation
 - Auth.js v5 authentication with credentials provider and JWT sessions
 - Role-based access control: admin, coach, player — enforced via middleware + API routes
-- Every page passes real user identity to AppShell/Sidebar
+- Player detail shows risk profile, latest check-in, body soreness, recent training sessions, and wellness history
 - Coach/admin player picker on both check-in and session logging pages
 - Data persisted in PostgreSQL via Prisma 7
 - Wellness check-in: POST creates, PUT updates, identity from session
@@ -200,7 +207,6 @@ The application is a **full-stack application with complete authentication, RBAC
 - Wellness edit UI at `/players/[id]/edit-checkin`
 - Body map selections stored as normalized child rows
 - Risk computation (ACWR, wellness trend, soreness flags) from persisted data
-- Risk data displayed on dashboard, player list, and player detail pages
 - Polished responsive design
 - 130 unit tests + 7 integration tests, all passing
 

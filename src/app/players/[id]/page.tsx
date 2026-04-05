@@ -7,15 +7,31 @@ import AppShell from "@/components/app-shell";
 import WellnessBadge from "@/components/wellness-badge";
 import BodyMapSummary from "@/components/body-map-summary";
 import { RiskLevelBadge, TrendBadge, AcwrValue } from "@/components/risk-badge";
-import { getPlayerById, getWellnessForPlayer, getLatestWellness, getRiskSnapshot } from "@/lib/data/service";
+import { getPlayerById, getWellnessForPlayer, getLatestWellness, getRiskSnapshot, getSessionsForPlayer } from "@/lib/data/service";
 import { getCurrentUser } from "@/lib/auth-utils";
 import { WELLNESS_METRICS } from "@/lib/types";
+import type { SessionType } from "@/lib/types";
+import { Activity } from "lucide-react";
 
 const statusStyles: Record<string, string> = {
   available: "bg-emerald-100 text-emerald-700",
   injured: "bg-red-100 text-red-700",
   resting: "bg-amber-100 text-amber-700",
 };
+
+const sessionTypeStyles: Record<SessionType, string> = {
+  match: "bg-info-light text-info",
+  training: "bg-accent-light text-accent",
+  gym: "bg-warning-light text-warning",
+  recovery: "bg-gray-100 text-muted",
+};
+
+function loadColor(load: number): string {
+  if (load < 300) return "text-muted";
+  if (load < 500) return "text-emerald-600";
+  if (load < 700) return "text-orange-600 font-semibold";
+  return "text-red-600 font-bold";
+}
 
 function metricColor(value: number): string {
   if (value <= 3) return "text-red-600";
@@ -39,6 +55,17 @@ export default async function PlayerDetailPage({
   const latest = await getLatestWellness(player.id);
   const latestBodyMap = latest?.bodyMap ?? [];
   const snap = await getRiskSnapshot(player.id);
+  const sessions = await getSessionsForPlayer(player.id);
+
+  // Session summary stats
+  const recentSessions = sessions.slice(0, 10);
+  const totalSessions = recentSessions.length;
+  const avgLoad = totalSessions > 0
+    ? Math.round(recentSessions.reduce((s, e) => s + e.sessionLoad, 0) / totalSessions)
+    : 0;
+  const maxLoad = totalSessions > 0
+    ? Math.max(...recentSessions.map((s) => s.sessionLoad))
+    : 0;
 
   return (
     <AppShell title={player.name} userRole={user?.role} userName={user?.name}>
@@ -156,6 +183,77 @@ export default async function PlayerDetailPage({
           <BodyMapSummary selections={latestBodyMap} />
         </div>
       )}
+
+      {/* Recent training sessions */}
+      <div className="mt-4 rounded-xl border border-card-border bg-card-bg p-5">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-foreground">Recent Sessions</h3>
+          <Activity className="h-4 w-4 text-muted" />
+        </div>
+        {totalSessions === 0 ? (
+          <p className="py-6 text-center text-sm text-muted">
+            No training sessions recorded yet.
+          </p>
+        ) : (
+          <>
+            {/* Mini summary */}
+            <div className="mb-4 grid grid-cols-3 gap-3">
+              <div className="rounded-lg bg-gray-50 px-3 py-2 text-center">
+                <p className="text-xs text-muted">Sessions</p>
+                <p className="mt-0.5 text-lg font-bold text-foreground">{totalSessions}</p>
+              </div>
+              <div className="rounded-lg bg-gray-50 px-3 py-2 text-center">
+                <p className="text-xs text-muted">Avg Load</p>
+                <p className="mt-0.5 text-lg font-bold text-foreground">{avgLoad} <span className="text-xs font-normal text-muted">AU</span></p>
+              </div>
+              <div className="rounded-lg bg-gray-50 px-3 py-2 text-center">
+                <p className="text-xs text-muted">Peak Load</p>
+                <p className={`mt-0.5 text-lg font-bold ${loadColor(maxLoad)}`}>{maxLoad} <span className="text-xs font-normal text-muted">AU</span></p>
+              </div>
+            </div>
+
+            {/* Session table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-card-border text-left">
+                    <th className="pb-2 pr-4 font-medium text-muted">Date</th>
+                    <th className="pb-2 pr-4 font-medium text-muted">Type</th>
+                    <th className="pb-2 pr-4 text-center font-medium text-muted">Duration</th>
+                    <th className="pb-2 pr-4 text-center font-medium text-muted">RPE</th>
+                    <th className="pb-2 text-center font-medium text-muted">Load</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentSessions.map((s) => (
+                    <tr key={s.id} className="border-b border-card-border/50 last:border-0">
+                      <td className="py-2.5 pr-4 text-foreground">{s.date}</td>
+                      <td className="py-2.5 pr-4">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${sessionTypeStyles[s.type]}`}>
+                          {s.type}
+                        </span>
+                      </td>
+                      <td className="py-2.5 pr-4 text-center text-foreground">{s.durationMinutes} min</td>
+                      <td className="py-2.5 pr-4 text-center">
+                        <span className={`inline-flex h-6 w-6 items-center justify-center rounded text-xs font-semibold ${
+                          s.rpe <= 3 ? "bg-emerald-50 text-emerald-600" :
+                          s.rpe <= 6 ? "bg-amber-50 text-amber-600" :
+                          "bg-red-50 text-red-600"
+                        }`}>
+                          {s.rpe}
+                        </span>
+                      </td>
+                      <td className={`py-2.5 text-center font-medium ${loadColor(s.sessionLoad)}`}>
+                        {s.sessionLoad} AU
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Wellness history */}
       <div className="mt-4 rounded-xl border border-card-border bg-card-bg p-5">
